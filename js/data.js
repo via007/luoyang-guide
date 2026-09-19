@@ -140,13 +140,11 @@ window.TRIP_DATA = {
 
   /* ---------- 路线 ---------- */
   route: {
-    /* 高德地图模块：Key 存在每台手机本地，不参与同步 */
+    /* 高德地图：JS API Key 是公开的客户端密钥，绑域名白名单防盗用
+       （后台请把 via007.github.io 加入白名单）。两台手机免配置。 */
     amap: {
-      helperHtml:
-        '嵌入真实地图需要一个高德免费 Key（只保存在你自己手机本机，不写进网页）：<br>' +
-        '① 打开 <a href="https://lbs.amap.com/" target="_blank">lbs.amap.com</a> 注册登录（1分钟）<br>' +
-        '② 控制台 → 应用管理 → 创建新应用 → 添加 Key，类型选 <b class="em">Web端（JS API）</b><br>' +
-        '③ 把 Key 和安全密钥粘贴到下面，配一次永久生效；你俩手机各配一次'
+      key: "0c51cc5f6cf0277a4c63f77f2d65aac7",
+      securityJsCode: "9200342e39fe63d5270d142d4de9006a"
     },
 
     /* 每天怎么走 */
@@ -203,22 +201,26 @@ window.TRIP_DATA = {
     dayColors: { 1: "#486a8a", 2: "#a4342a", 3: "#c19a5b", 4: "#4a7a5b", 5: "#7a5a8a" },
     dayNames: { 1: "D1 抵达", 2: "D2 石窟+洛博", 3: "D3 隋唐城", 4: "D4 汉服", 5: "D5 机动" },
 
+    /* 路线节点：lng/lat 为高德真实坐标（GCJ-02，逐个按 POI 核实）
+       kw 是点「去这里」时丢给高德的搜索词，不填就用 name */
     defaultNodes: [
-      { id: "station", name: "洛阳龙门站", x: 160, y: 478, day: 1 },
-      { id: "minsu", name: "民宿·石窟旁(10/1晚)", x: 85, y: 450, day: 1 },
-      { id: "sk", name: "龙门石窟", x: 120, y: 408, day: 2 },
-      { id: "lb", name: "洛阳博物馆", x: 190, y: 355, day: 2 },
-      { id: "hotel", name: "酒店·老城(10/2-10/5)", x: 350, y: 270, day: 3 },
-      { id: "jia6", name: "天子驾六", x: 230, y: 210, day: 3 },
-      { id: "jzc", name: "九洲池", x: 290, y: 130, day: 3 },
-      { id: "mt", name: "明堂天堂", x: 440, y: 160, day: 3 },
-      { id: "ytm", name: "应天门", x: 390, y: 230, day: 3 },
-      { id: "xjtf", name: "小街天府", x: 270, y: 330, day: 3 },
-      { id: "gm", name: "古墓博物馆", x: 330, y: 60, day: 4 },
-      { id: "ly", name: "洛邑古城", x: 540, y: 250, day: 4 },
-      { id: "szj", name: "十字街夜市", x: 470, y: 290, day: 4 },
-      { id: "bm", name: "白马寺", x: 620, y: 100, day: 5 },
-      { id: "yh", name: "大运河博物馆", x: 590, y: 340, day: 5 }
+      { id: "station", name: "洛阳龙门站", lng: 112.456291, lat: 34.593842, day: 1 },
+      { id: "minsu", name: "民宿·石窟旁(10/1晚)", lng: 112.475254, lat: 34.567791, day: 1,
+        kw: "友约居民宿(龙门石窟西北游客中心店)" },
+      { id: "sk", name: "龙门石窟", lng: 112.477482, lat: 34.558727, day: 2 },
+      { id: "lb", name: "洛阳博物馆", lng: 112.451541, lat: 34.643323, day: 2 },
+      { id: "hotel", name: "酒店·老城(10/2-10/5)", lng: 112.471252, lat: 34.680899, day: 3,
+        kw: "洛阳老城 丽景门" },
+      { id: "jia6", name: "天子驾六", lng: 112.443146, lat: 34.674010, day: 3 },
+      { id: "jzc", name: "九洲池", lng: 112.453774, lat: 34.681749, day: 3 },
+      { id: "mt", name: "明堂天堂", lng: 112.459829, lat: 34.680653, day: 3 },
+      { id: "ytm", name: "应天门", lng: 112.460805, lat: 34.675990, day: 3 },
+      { id: "xjtf", name: "小街天府", lng: 112.446348, lat: 34.672064, day: 3 },
+      { id: "gm", name: "古墓博物馆", lng: 112.414511, lat: 34.733086, day: 4 },
+      { id: "ly", name: "洛邑古城", lng: 112.485027, lat: 34.680541, day: 4 },
+      { id: "szj", name: "十字街夜市", lng: 112.478954, lat: 34.682918, day: 4 },
+      { id: "bm", name: "白马寺", lng: 112.605311, lat: 34.721828, day: 5 },
+      { id: "yh", name: "大运河博物馆", lng: 112.493957, lat: 34.673744, day: 5 }
     ],
     defaultEdges: [
       ["station", "minsu"],

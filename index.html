@@ -69,40 +69,19 @@
 
   <!-- ================= 路线 ================= -->
   <section class="tabpage" id="p-route">
-    <div class="sec">真实地图 · 可缩放拖动</div>
-    <div class="card" style="padding:12px">
+    <div class="sec">路线地图 · 真实定位</div>
+    <div class="card" style="padding:10px">
       <div id="amapBox"></div>
-      <div id="amapForm">
-        <p class="map-help" id="amapHelp"></p>
-        <input class="aki" id="akKey" placeholder="粘贴 Key" autocomplete="off">
-        <input class="aki" id="akSec" placeholder="粘贴 安全密钥（securityJsCode）" autocomplete="off">
-        <button class="rbtn" id="akSave" type="button">保存并加载地图</button>
-        <p id="akMsg"></p>
-        <button class="maplink" id="akReset" type="button" style="display:none">清除本机 Key</button>
-      </div>
-      <div class="rlegend" id="alegend" style="display:none"></div>
+      <p id="amapMsg"></p>
+      <div id="amapFilter"></div>
+      <div class="rlegend" id="alegend"></div>
+      <p id="rhint">
+        <b>点标记</b>看是第几天、一键跳高德导航 · 上方按天开关可只看某一天 · 双指缩放 / 拖动查看
+      </p>
     </div>
 
     <div class="sec">每天怎么走（距离 + 公交地铁）</div>
     <div id="legsByDay"></div>
-
-    <div class="sec">自定义连线（可编辑）</div>
-    <div class="card" style="padding:10px">
-      <svg id="rmap" viewBox="0 0 680 520" xmlns="http://www.w3.org/2000/svg" aria-label="可编辑路线图"></svg>
-      <div class="rlegend" id="rlegend"></div>
-      <div id="rsel"></div>
-      <div class="rtools">
-        <button id="btnAdd" type="button">＋ 加节点</button>
-        <button id="btnRename" type="button">改名</button>
-        <button id="btnDelEdge" type="button">断开连线</button>
-        <button id="btnDelNode" type="button" class="warn">删节点</button>
-        <button id="btnClear" type="button" class="warn">清空全部</button>
-        <button id="btnReset" type="button">恢复默认</button>
-      </div>
-      <p id="rhint">
-        <b>拖动</b>节点调整位置 · <b>点一下</b>选中节点，<b>再点另一个</b>就连线（箭头=先后顺序）· 选中后可用上方按钮改名/断开/删除 · 改动自动保存并同步
-      </p>
-    </div>
   </section>
 
   <!-- ================= 景区 ================= -->

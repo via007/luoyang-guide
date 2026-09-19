@@ -256,32 +256,39 @@ details[open] summary{border-bottom:1px solid var(--line);background:linear-grad
 .navline .nm{flex:1;font-weight:600}
 .navline a{flex-shrink:0;text-decoration:none;font-size:11.5px;padding:6px 14px;border-radius:9px}
 
-/* ---------- 路线编辑器 ---------- */
-#rmap{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line);background:var(--rmap-bg);touch-action:none;user-select:none}
-.rtools{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-.rtools button{flex:1;min-width:72px;border:1px solid var(--line);background:var(--paper2);border-radius:10px;padding:9px 4px;font-size:12px;color:var(--ink);cursor:pointer;font-family:var(--sans)}
-.rtools button.warn{background:var(--warn-bg);color:var(--verm-d);border-color:var(--warn-bd)}
-.rtools button:active{transform:scale(.96)}
+/* ---------- 路线地图 ---------- */
+#amapBox{width:100%;height:56vh;min-height:300px;max-height:540px;border-radius:12px;overflow:hidden;background:var(--paper2)}
+#amapMsg{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.7;display:none}
+#amapFilter{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.daychip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--paper2);
+  border-radius:99px;padding:6px 12px;font-size:12px;color:var(--sub);cursor:pointer;font-family:var(--sans);
+  opacity:.45;transition:opacity .2s,border-color .2s,background .2s}
+.daychip.on{opacity:1;background:var(--card);border-color:var(--c);color:var(--ink);font-weight:600}
+.daychip i{width:8px;height:8px;border-radius:50%;background:var(--c);flex-shrink:0}
+.daychip.all{opacity:1;background:var(--paper2);font-weight:600}
+.daychip:active{transform:scale(.96)}
 #rhint{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.7}
 #rhint b{color:var(--verm-d)}
-#rsel{font-size:12.5px;margin-top:8px;padding:8px 12px;border-radius:10px;background:var(--sel-bg);border:1px solid var(--sel-bd);display:none}
 .rlegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--sub)}
 .rlegend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:4px;vertical-align:middle}
+
+/* 地图上的标记（AMap 自定义 content） */
+.amk{display:flex;align-items:center;gap:4px;margin-left:-6px;white-space:nowrap;cursor:pointer;
+  font:700 11.5px/1 var(--serif);color:var(--ink);
+  text-shadow:0 1px 2px #fff,0 0 5px #fff,0 0 8px #fff}
+.amk i{width:12px;height:12px;border-radius:50%;background:var(--c);border:2px solid #fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.45);flex-shrink:0}
+/* 信息窗 */
+.aminfo{padding:11px 13px;min-width:150px;font-family:var(--sans)}
+.aminfo h5{font-family:var(--serif);font-size:14px;margin:0 0 3px;color:var(--ink)}
+.aminfo .d{font-size:11.5px;color:var(--sub);margin:0 0 9px}
+.aminfo .btn{display:block;text-align:center;font-size:12px;padding:7px 10px}
 .leg{padding:9px 0;border-bottom:1px dashed var(--dash);font-size:13px}
 .leg:last-child{border-bottom:none}
 .leg .ab{font-weight:700;font-size:13.5px}
 .leg .ab .km{color:var(--gold);font-family:var(--serif);font-weight:700;margin-left:6px;font-size:12px}
 .leg .how{margin-top:3px;color:var(--soft);font-size:12.5px;line-height:1.8}
 .leg .how b{color:var(--verm-d)}
-
-/* ---------- 高德地图模块 ---------- */
-#amapBox{width:100%;height:420px;border-radius:12px;display:none;overflow:hidden}
-#amapBox.on{display:block}
-.aki{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:8px;background:var(--paper2);font-family:var(--sans);color:var(--ink)}
-.rbtn{width:100%;margin-top:10px;border:none;border-radius:11px;padding:11px;font-size:13.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--verm),var(--verm-d));cursor:pointer;font-family:var(--sans)}
-#akMsg{font-size:12px;color:var(--verm-d);margin-top:8px;display:none}
-.map-help{font-size:12.5px;color:var(--sub);line-height:1.9}
-.maplink{display:inline-block;margin-top:8px;font-size:11.5px;color:var(--sub);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:var(--sans)}
 
 /* 桌面端稍微收一收 */
 @media (min-width:700px){

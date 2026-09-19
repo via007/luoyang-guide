@@ -10,6 +10,21 @@
 
   function setHtml(id, html) { var n = $(id); if (n) n.innerHTML = html; }
 
+  function escHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  /* tab 切到某个页面时的回调（地图容器藏在隐藏 tab 里时尺寸为 0，必须等显示后再初始化） */
+  var tabHooks = {};
+  function onTabShow(id, fn) { (tabHooks[id] = tabHooks[id] || []).push(fn); }
+  function fireTabShow(id) {
+    (tabHooks[id] || []).forEach(function (fn) {
+      try { fn(); } catch (e) { console.error(e); }
+    });
+  }
+
   /* 高德 URI：统一由关键词拼，避免每处重复写编码 */
   function amapUri(kw) {
     return "https://uri.amap.com/search?keyword=" + encodeURIComponent(kw) + "&city=" + encodeURIComponent("洛阳") + "&callnative=1";
@@ -243,286 +258,175 @@
   }
 
   /* ======================================================================
-     路线编辑器（SVG）—— 状态同步
-     ====================================================================== */
-  function initRouteEditor() {
-    var R = D.route;
-    var DAYC = R.dayColors, DAYN = R.dayNames;
-    var DEF = { nodes: R.defaultNodes, edges: R.defaultEdges };
-
-    var svg = $("rmap");
-    var NS = "http://www.w3.org/2000/svg";
-    var sel = null, drag = null, moved = false;
-
-    /* 读本机/远端已有的路线；没有就用默认 */
-    var saved = window.Sync.get("route");
-    var state = (saved && saved.nodes && saved.nodes.length)
-      ? saved
-      : { nodes: JSON.parse(JSON.stringify(DEF.nodes)), edges: JSON.parse(JSON.stringify(DEF.edges)) };
-
-    function save() { window.Sync.set("route", state); }
-    function nodeById(id) {
-      for (var i = 0; i < state.nodes.length; i++) if (state.nodes[i].id === id) return state.nodes[i];
-      return null;
-    }
-    function edgeColor(e) { var n = nodeById(e[0]); return n ? (DAYC[n.day] || "#8a7a6a") : "#8a7a6a"; }
-
-    function render() {
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-
-      /* 河流装饰 */
-      var r1 = document.createElementNS(NS, "path");
-      r1.setAttribute("d", "M0,300 C140,285 280,312 420,292 C540,276 610,300 680,288");
-      r1.setAttribute("stroke", "#b9cfe3"); r1.setAttribute("stroke-width", "10");
-      r1.setAttribute("fill", "none"); r1.setAttribute("opacity", ".35"); r1.setAttribute("stroke-linecap", "round");
-      svg.appendChild(r1);
-
-      /* 连线 + 箭头 */
-      state.edges.forEach(function (e) {
-        var a = nodeById(e[0]), b = nodeById(e[1]);
-        if (!a || !b) return;
-        var c = edgeColor(e);
-        var dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx * dx + dy * dy) || 1;
-        var ux = dx / len, uy = dy / len;
-        var x1 = a.x + ux * 16, y1 = a.y + uy * 16, x2 = b.x - ux * 20, y2 = b.y - uy * 20;
-
-        var line = document.createElementNS(NS, "line");
-        line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-        line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-        line.setAttribute("stroke", c); line.setAttribute("stroke-width", "3"); line.setAttribute("opacity", ".85");
-        svg.appendChild(line);
-
-        var px = -uy, py = ux, s = 6;
-        var tri = document.createElementNS(NS, "polygon");
-        tri.setAttribute("points",
-          (x2 + ux * 10) + "," + (y2 + uy * 10) + " " +
-          (x2 + px * s) + "," + (y2 + py * s) + " " +
-          (x2 - px * s) + "," + (y2 - py * s));
-        tri.setAttribute("fill", c);
-        svg.appendChild(tri);
-      });
-
-      /* 节点 */
-      state.nodes.forEach(function (n) {
-        var g = document.createElementNS(NS, "g");
-        g.setAttribute("data-id", n.id);
-        g.style.cursor = "grab";
-        var c = DAYC[n.day] || "#8a7a6a";
-
-        var halo = document.createElementNS(NS, "circle");
-        halo.setAttribute("cx", n.x); halo.setAttribute("cy", n.y); halo.setAttribute("r", "17");
-        halo.setAttribute("fill", c); halo.setAttribute("opacity", sel === n.id ? "0.35" : "0.12");
-        g.appendChild(halo);
-
-        var dot = document.createElementNS(NS, "circle");
-        dot.setAttribute("cx", n.x); dot.setAttribute("cy", n.y); dot.setAttribute("r", "10");
-        dot.setAttribute("fill", c); dot.setAttribute("stroke", "#fff"); dot.setAttribute("stroke-width", "2.5");
-        g.appendChild(dot);
-
-        var t = document.createElementNS(NS, "text");
-        t.setAttribute("x", n.x); t.setAttribute("y", n.y - 22);
-        t.setAttribute("text-anchor", "middle"); t.setAttribute("font-size", "13");
-        t.setAttribute("font-family", "Songti SC,SimSun,serif"); t.setAttribute("font-weight", "700");
-        t.setAttribute("fill", "currentColor"); t.setAttribute("stroke", "var(--rmap-bg)"); t.setAttribute("stroke-width", "4");
-        t.setAttribute("paint-order", "stroke");
-        t.textContent = n.name;
-        g.appendChild(t);
-
-        if (sel === n.id) {
-          var ring = document.createElementNS(NS, "circle");
-          ring.setAttribute("cx", n.x); ring.setAttribute("cy", n.y); ring.setAttribute("r", "15");
-          ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "var(--verm)"); ring.setAttribute("stroke-width", "2.5");
-          ring.setAttribute("stroke-dasharray", "4 3");
-          g.appendChild(ring);
-        }
-
-        g.addEventListener("pointerdown", function (ev) { onDown(ev, n.id); });
-        svg.appendChild(g);
-      });
-
-      updateSel();
-    }
-
-    function svgPos(ev) {
-      var pt = svg.createSVGPoint();
-      pt.x = ev.clientX; pt.y = ev.clientY;
-      return pt.matrixTransform(svg.getScreenCTM().inverse());
-    }
-
-    function onDown(ev, id) {
-      ev.preventDefault();
-      var p = svgPos(ev);
-      var n = nodeById(id);
-      drag = { id: id, dx: p.x - n.x, dy: p.y - n.y };
-      moved = false;
-    }
-
-    svg.addEventListener("pointermove", function (ev) {
-      if (!drag) return;
-      var p = svgPos(ev);
-      var n = nodeById(drag.id);
-      if (!n) return;
-      var nx = Math.min(660, Math.max(20, p.x - drag.dx));
-      var ny = Math.min(500, Math.max(30, p.y - drag.dy));
-      if (Math.abs(nx - n.x) > 3 || Math.abs(ny - n.y) > 3) moved = true;
-      n.x = nx; n.y = ny;
-      render();
-    });
-
-    svg.addEventListener("pointerup", function () {
-      if (!drag) return;
-      var id = drag.id;
-      drag = null;
-      if (moved) { save(); return; }
-
-      /* 轻点：第一次选中，第二次连线 */
-      if (sel === null) sel = id;
-      else if (sel === id) sel = null;
-      else {
-        var exists = state.edges.some(function (e) { return e[0] === sel && e[1] === id; });
-        if (!exists) state.edges.push([sel, id]);
-        sel = null; save();
-      }
-      render();
-    });
-
-    svg.addEventListener("pointerleave", function () { drag = null; });
-    svg.addEventListener("pointercancel", function () { drag = null; });
-
-    function updateSel() {
-      var box = $("rsel");
-      if (sel) {
-        var n = nodeById(sel);
-        box.style.display = "block";
-        box.textContent = "已选中：" + (n ? n.name : "") + " — 再点另一个节点即可连线";
-      } else {
-        box.style.display = "none";
-      }
-    }
-
-    $("btnAdd").addEventListener("click", function () {
-      var name = prompt("节点名称（如：白马寺、小街天府）");
-      if (!name) return;
-      var d = prompt("属于第几天？输入 1-5（D1抵达 D2石窟+洛博 D3隋唐城 D4汉服 D5机动）", "3");
-      d = parseInt(d, 10);
-      if (!(d >= 1 && d <= 5)) d = 3;
-      state.nodes.push({ id: "u" + Date.now(), name: name, x: 340, y: 260, day: d });
-      save(); render();
-    });
-
-    $("btnRename").addEventListener("click", function () {
-      if (!sel) { alert("先点选一个节点"); return; }
-      var n = nodeById(sel);
-      var name = prompt("新名称", n.name);
-      if (name) { n.name = name; save(); render(); }
-    });
-
-    $("btnDelEdge").addEventListener("click", function () {
-      if (!sel) { alert("先点选一个节点"); return; }
-      state.edges = state.edges.filter(function (e) { return e[0] !== sel && e[1] !== sel; });
-      save(); render();
-    });
-
-    $("btnDelNode").addEventListener("click", function () {
-      if (!sel) { alert("先点选一个节点"); return; }
-      state.nodes = state.nodes.filter(function (n) { return n.id !== sel; });
-      state.edges = state.edges.filter(function (e) { return e[0] !== sel && e[1] !== sel; });
-      sel = null; save(); render();
-    });
-
-    $("btnClear").addEventListener("click", function () {
-      if (!confirm("清空所有连线？（节点保留）")) return;
-      state.edges = []; save(); render();
-    });
-
-    $("btnReset").addEventListener("click", function () {
-      if (!confirm("恢复默认路线？你的修改会被覆盖")) return;
-      state = { nodes: JSON.parse(JSON.stringify(DEF.nodes)), edges: JSON.parse(JSON.stringify(DEF.edges)) };
-      sel = null; save(); render();
-    });
-
-    /* 图例 */
-    var legend = $("rlegend");
-    legend.innerHTML = Object.keys(DAYN).map(function (d) {
-      return "<span><i style='background:" + DAYC[d] + "'></i>" + DAYN[d] + "</span>";
-    }).join("");
-
-    /* 远端改了路线 → 重画 */
-    window.Sync.on("route", function (remote) {
-      if (!remote || !remote.nodes) return;
-      state = remote;
-      sel = null;
-      render();
-    });
-
-    render();
-  }
-
-  /* ======================================================================
-     高德真实地图（Key 存本机，不参与同步）
+     真实地图（高德 JS API 2.0）—— 15 个地点落在真实坐标上，按天着色/筛选
+     Key 直接读 D.route.amap（公开客户端密钥，绑域名白名单），两台手机免配置
      ====================================================================== */
   function initAmap() {
-    var AK_KEY = "ly_amap_key", AK_SEC = "ly_amap_sec";
-    var form = $("amapForm"), box = $("amapBox"), msg = $("akMsg");
-    var loaded = false;
+    var A = D.route.amap || {};
+    var box = $("amapBox");
+    if (!box || !A.key) return;
 
-    setHtml("amapHelp", D.route.amap.helperHtml);
+    var R = D.route;
+    var DAYC = R.dayColors, DAYN = R.dayNames;
+    var nodes = (R.defaultNodes || []).filter(function (n) { return n.lng && n.lat; });
+    var edges = R.defaultEdges || [];
 
-    function get(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
-    function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    var map = null, loading = null, infoWin = null;
+    var markers = [], lines = [];
+    var on = {};                                   /* 每天的显隐开关，默认全开 */
+    Object.keys(DAYN).forEach(function (d) { on[d] = true; });
 
-    function show(text, isErr) {
-      msg.style.display = "block";
-      msg.textContent = text;
-      msg.style.color = isErr ? "var(--verm-d)" : "var(--sub)";
+    function nodeById(id) {
+      for (var i = 0; i < nodes.length; i++) if (nodes[i].id === id) return nodes[i];
+      return null;
+    }
+    function colorOf(day) { return DAYC[day] || "#8a7a6a"; }
+
+    /* 一条折线归属「目的地」所在的那一天：hotel→gm 算 D4（那天才去古墓），
+       这样按天筛选的结果和每天的日程完全对得上 */
+    function edgeDay(e) {
+      var to = nodeById(e[1]);
+      return to ? to.day : null;
     }
 
-    function loadMap(key, sec) {
-      if (loaded) return;
-      loaded = true;
-      window._AMapSecurityConfig = { securityJsCode: sec };
-      var s = document.createElement("script");
-      s.src = "https://webapi.amap.com/maps?v=2.0&key=" + encodeURIComponent(key);
-      s.onload = function () {
-        box.classList.add("on");
-        form.style.display = "none";
-        try {
-          var map = new window.AMap.Map("amapBox", { zoom: 12, center: [112.454, 34.619], viewMode: "2D" });
-          (D.route.defaultNodes || []).forEach(function (n) {
-            if (!n.lng || !n.lat) return;
-            new window.AMap.Marker({ position: [n.lng, n.lat], title: n.name, map: map });
-          });
-        } catch (e) {
-          show("地图初始化失败：" + e.message, true);
-          loaded = false;
+    function msg(text, isErr) {
+      var el = $("amapMsg");
+      if (!el) return;
+      el.style.display = text ? "block" : "none";
+      el.textContent = text || "";
+      el.style.color = isErr ? "var(--verm-d)" : "var(--sub)";
+    }
+
+    function loadScript() {
+      if (loading) return loading;
+      loading = new Promise(function (resolve, reject) {
+        if (window.AMap) return resolve();
+        window._AMapSecurityConfig = { securityJsCode: A.securityJsCode || "" };
+        var s = document.createElement("script");
+        s.src = "https://webapi.amap.com/maps?v=2.0&key=" + encodeURIComponent(A.key);
+        s.onload = function () { window.AMap ? resolve() : reject(new Error("高德脚本未就绪")); };
+        s.onerror = function () { reject(new Error("高德脚本加载失败")); };
+        document.head.appendChild(s);
+      });
+      return loading;
+    }
+
+    function markerHtml(n) {
+      return '<div class="amk" style="--c:' + colorOf(n.day) + '">' +
+             "<i></i><b>" + escHtml(n.name) + "</b></div>";
+    }
+
+    function infoHtml(n) {
+      return '<div class="aminfo"><h5>' + escHtml(n.name) + "</h5>" +
+             '<p class="d">' + escHtml(DAYN[n.day] || "") + "</p>" +
+             '<a class="btn amap" href="' + amapUri(n.kw || n.name) + '">去这里 · 高德导航</a></div>';
+    }
+
+    function draw(AMap) {
+      map = new AMap.Map("amapBox", {
+        zoom: 12,
+        center: [112.454, 34.619],
+        viewMode: "2D"
+      });
+      infoWin = new AMap.InfoWindow({ offset: new AMap.Pixel(0, -10) });
+
+      nodes.forEach(function (n) {
+        var mk = new AMap.Marker({
+          position: [n.lng, n.lat],
+          content: markerHtml(n),
+          anchor: "left-center",
+          title: n.name,
+          zIndex: 100 + (n.day || 0),
+          map: map
+        });
+        mk.on("click", function () {
+          infoWin.setContent(infoHtml(n));
+          infoWin.open(map, [n.lng, n.lat]);
+        });
+        mk.__day = n.day;
+        markers.push(mk);
+      });
+
+      edges.forEach(function (e) {
+        var a = nodeById(e[0]), b = nodeById(e[1]);
+        if (!a || !b) return;
+        var d = edgeDay(e);
+        var pl = new AMap.Polyline({
+          path: [[a.lng, a.lat], [b.lng, b.lat]],
+          strokeColor: colorOf(d),
+          strokeWeight: 3,
+          strokeOpacity: 0.85,
+          lineJoin: "round",
+          lineCap: "round",
+          showDir: true,
+          zIndex: 50,
+          map: map
+        });
+        pl.__day = d;
+        lines.push(pl);
+      });
+
+      /* 让 15 个点全部进画面（白马寺在城东 15 公里外，必须 fit） */
+      map.setFitView(null, false, [70, 70, 70, 70]);
+      applyFilter();
+    }
+
+    function applyFilter() {
+      markers.forEach(function (mk) { on[mk.__day] ? mk.show() : mk.hide(); });
+      lines.forEach(function (pl) { on[pl.__day] ? pl.show() : pl.hide(); });
+    }
+
+    function buildFilter() {
+      var wrap = $("amapFilter");
+      if (!wrap) return;
+      wrap.innerHTML = Object.keys(DAYN).map(function (d) {
+        return '<button type="button" class="daychip on" data-day="' + d +
+               '" style="--c:' + colorOf(d) + '"><i></i>' + escHtml(DAYN[d]) + "</button>";
+      }).join("") + '<button type="button" class="daychip all" data-day="all">全部显示</button>';
+
+      wrap.addEventListener("click", function (ev) {
+        var btn = ev.target.closest ? ev.target.closest(".daychip") : null;
+        if (!btn) return;
+        var d = btn.getAttribute("data-day");
+        if (d === "all") {
+          Object.keys(DAYN).forEach(function (k) { on[k] = true; });
+        } else {
+          on[d] = !on[d];
         }
-      };
-      s.onerror = function () {
-        show("高德脚本加载失败，请检查 Key 是否为「Web端(JS API)」类型、以及网络是否可达。", true);
-        loaded = false;
-      };
-      document.head.appendChild(s);
+        wrap.querySelectorAll(".daychip").forEach(function (b) {
+          var bd = b.getAttribute("data-day");
+          if (bd === "all") return;
+          b.classList.toggle("on", !!on[bd]);
+        });
+        applyFilter();
+      });
     }
 
-    var k = get(AK_KEY), sec = get(AK_SEC);
-    if (k) { $("akKey").value = k; $("akSec").value = sec; loadMap(k, sec); }
+    function buildLegend() {
+      var el = $("alegend");
+      if (!el) return;
+      el.innerHTML = Object.keys(DAYN).map(function (d) {
+        return "<span><i style='background:" + colorOf(d) + "'></i>" + escHtml(DAYN[d]) + "</span>";
+      }).join("");
+    }
 
-    $("akSave").addEventListener("click", function () {
-      var key = $("akKey").value.trim(), s2 = $("akSec").value.trim();
-      if (!key) { show("请先粘贴 Key", true); return; }
-      set(AK_KEY, key); set(AK_SEC, s2);
-      loaded = false;
-      loadMap(key, s2);
-      $("akReset").style.display = "inline-block";
-    });
+    function ensure() {
+      if (map) { map.resize(); return; }
+      loadScript()
+        .then(function () { draw(window.AMap); msg(""); })
+        .catch(function (e) {
+          msg("地图加载失败：" + e.message + "（行程文字不受影响）", true);
+          loading = null;
+        });
+    }
 
-    $("akReset").addEventListener("click", function () {
-      if (!confirm("清除本机保存的高德 Key？")) return;
-      set(AK_KEY, ""); set(AK_SEC, "");
-      location.reload();
-    });
+    buildFilter();
+    buildLegend();
+    msg("地图加载中…");
 
-    if (k) $("akReset").style.display = "inline-block";
+    /* 地图容器在隐藏 tab 里尺寸为 0，必须等 tab 显示后再初始化 */
+    onTabShow("p-route", ensure);
+    if ($("p-route") && $("p-route").classList.contains("active")) ensure();
   }
 
   /* ======================================================================
@@ -537,6 +441,7 @@
         document.querySelectorAll(".tabpage").forEach(function (p) { p.classList.remove("active"); });
         var t = $(b.getAttribute("data-p"));
         if (t) t.classList.add("active");
+        fireTabShow(b.getAttribute("data-p"));
         window.scrollTo(0, 0);
       });
     });
@@ -604,7 +509,6 @@
     renderFoods();
     renderTrans();
     renderMemo();
-    initRouteEditor();
     initAmap();
   }
 
