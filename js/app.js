@@ -85,6 +85,21 @@
     }).join("<br>"));
   }
 
+  /* 住宿：与景区卡同一套折叠卡样式（details/summary 的样式是通用的） */
+  function renderStays() {
+    setHtml("stays", (D.stays || []).map(function (s) {
+      return "<details" + (s.open ? " open" : "") + ">" +
+        '<summary><span class="ttl"><span class="no">' + s.no + "</span>" + s.name + tagsHtml(s.tags) +
+        '</span><span class="arrow">▶</span></summary>' +
+        '<div class="detail-body">' +
+          s.kvs.map(function (kv) {
+            return '<div class="kv"><div class="k">' + kv.k + '</div><div class="v">' + kv.v + "</div></div>";
+          }).join("") +
+          (s.btns ? '<div class="btnrow">' + s.btns.map(btnHtml).join("") + "</div>" : "") +
+        "</div></details>";
+    }).join(""));
+  }
+
   /* ======================================================================
      行程
      ====================================================================== */
@@ -512,6 +527,7 @@
   function renderAll() {
     renderHero();
     renderHome();
+    renderStays();
     renderPlan();
     renderLegs();
     renderSights();
