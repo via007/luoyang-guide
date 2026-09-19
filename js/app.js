@@ -368,7 +368,16 @@
 
       /* 让 15 个点全部进画面（白马寺在城东 15 公里外，必须 fit） */
       map.setFitView(null, false, [70, 70, 70, 70]);
+
+      /* 装下全域时缩放只有 11，老城那 5 个点挤在 2 公里内、标签会糊成一团。
+         低缩放只显示圆点，放大到 12 级以上再显示名称。 */
+      map.on("zoomend", syncLabelMode);
+      syncLabelMode();
       applyFilter();
+    }
+
+    function syncLabelMode() {
+      if (map && box) box.classList.toggle("zoomed-out", map.getZoom() < 12);
     }
 
     function applyFilter() {
