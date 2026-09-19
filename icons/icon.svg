@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6e211c"/>
+      <stop offset="55%" stop-color="#a4342a"/>
+      <stop offset="100%" stop-color="#7c2620"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#g)"/>
+  <g opacity="0.10" stroke="#e7d3a8" stroke-width="2">
+    <path d="M0 64H512M0 128H512M0 192H512M0 256H512M0 320H512M0 384H512M0 448H512"/>
+    <path d="M64 0V512M128 0V512M192 0V512M256 0V512M320 0V512M384 0V512M448 0V512"/>
+  </g>
+  <circle cx="256" cy="256" r="176" fill="none" stroke="#c19a5b" stroke-width="4" opacity="0.5"/>
+  <text x="256" y="256" font-family="Songti SC, STSong, Noto Serif SC, SimSun, serif"
+        font-size="248" font-weight="700" fill="#f0dfbe" text-anchor="middle"
+        dominant-baseline="central" dy="0.04em">洛</text>
+</svg>

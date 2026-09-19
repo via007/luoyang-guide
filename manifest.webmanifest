@@ -1,0 +1,17 @@
+{
+  "name": "洛阳 · 神都行 | 国庆双人游",
+  "short_name": "神都行",
+  "description": "洛阳国庆五天双人游攻略：行程、路线、景区、美食、交通、备忘清单。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6efe1",
+  "theme_color": "#6e211c",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
