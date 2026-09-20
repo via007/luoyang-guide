@@ -128,22 +128,48 @@
       (s.note ? '<div class="note">' + s.note + "</div>" : "") + "</div>";
   }
 
+  /* 一段交通：从哪到哪、多远、怎么走、要不要一键导航 */
+  function legHtml(l) {
+    return '<div class="leg">' +
+      '<div class="ab">' + l.from + " → " + l.to + '<span class="km">' + l.km + "</span></div>" +
+      '<div class="how">' + l.how + "</div>" +
+      (l.btns ? '<div class="btnrow">' + l.btns.map(btnHtml).join("") + "</div>" : "") +
+      "</div>";
+  }
+
+  /* 行程卡 = 今天去哪（时间轴）+ 今晚住哪 + 今天怎么走 + 预计花费
+     路线页只剩两张地图，交通段落跟着当天走，用的时候不用来回切 tab */
   function renderPlan() {
     setHtml("dayPills", D.days.map(function (d, i) {
       return '<button class="daypill' + (i === 0 ? " on" : "") + '" data-d="' + d.id + '" type="button">' + d.pill + "</button>";
     }).join(""));
 
+    var stayByNo = {};
+    (D.stays || []).forEach(function (s) { stayByNo[s.no] = s; });
+
     setHtml("dayList", D.days.map(function (d) {
-      var body = d.slots && d.slots.length
+      var out = d.slots && d.slots.length
         ? '<div class="timeline">' + d.slots.map(slotHtml).join("") + "</div>"
         : "";
-      var alt = (d.alt || []).map(function (a) {
-        return "<h4>" + a.title + '</h4><div class="timeline">' + a.slots.map(slotHtml).join("") + "</div>";
-      }).join("");
+
+      var s = stayByNo[d.stayNo];
+      if (s) {
+        out += '<div class="dsec"><div class="dsec-h">今晚住</div>' +
+          '<div class="dstay"><span class="no">' + s.no + "</span>" + escHtml(s.name) + tagsHtml(s.tags) + "</div></div>";
+      }
+
+      if (d.legs && d.legs.length) {
+        out += '<div class="dsec"><div class="dsec-h">今天怎么走</div>' + d.legs.map(legHtml).join("") + "</div>";
+      }
+
+      if (d.cost) {
+        out += '<div class="dcost"><span>预计花费</span>' + d.cost + "</div>";
+      }
+
       return '<div class="daycard" id="' + d.id + '">' +
         '<div class="dayhead"><span class="dnum">' + d.numCn + '</span><span class="dttl">' + d.date + " · " + d.dow +
         '</span><span class="dsub">' + d.sub + "</span></div>" +
-        '<div class="card">' + body + alt + "</div></div>";
+        '<div class="card">' + out + "</div></div>";
     }).join(""));
 
     /* 点 pill 滚到对应天，并高亮 */
@@ -159,19 +185,10 @@
   }
 
   /* ======================================================================
-     路线：每天怎么走
+     路线：只剩两张地图 + 跨城转场提示
      ====================================================================== */
-  function renderLegs() {
+  function renderRoute() {
     if (D.route.transfer) setHtml("routeTransfer", D.route.transfer);
-    setHtml("legsByDay", D.route.legsByDay.map(function (day) {
-      return '<div class="card"><h4>' + day.h4 + "</h4>" + day.legs.map(function (l) {
-        return '<div class="leg">' +
-          '<div class="ab">' + l.from + " → " + l.to + '<span class="km">' + l.km + "</span></div>" +
-          '<div class="how">' + l.how + "</div>" +
-          (l.btns ? '<div class="btnrow">' + l.btns.map(btnHtml).join("") + "</div>" : "") +
-          "</div>";
-      }).join("") + "</div>";
-    }).join(""));
   }
 
   /* ======================================================================
@@ -543,7 +560,7 @@
     renderHome();
     renderStays();
     renderPlan();
-    renderLegs();
+    renderRoute();
     renderSights();
     renderFoods();
     renderTrans();

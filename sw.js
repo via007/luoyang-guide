@@ -7,7 +7,7 @@
 
    ⚠️ 每次部署改了 css/js，把 VERSION 号 +1，否则手机会一直用旧缓存。
    ========================================================================== */
-var VERSION = "v6";
+var VERSION = "v7";
 var CACHE = "shendu-" + VERSION;
 
 var SHELL = [
