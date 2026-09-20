@@ -57,17 +57,37 @@
       '<div class="hm"><div class="l">天气</div><div class="v">' + m.weather + '</div><div class="s">' + m.weatherSub + "</div></div>");
   }
 
-  function renderHome() {
-    setHtml("trains", D.trains.map(function (t) {
+  /* 行程卡：抵达和返程用同一套版式 */
+  function trainBlock(list) {
+    return (list || []).map(function (t) {
       return '<div class="train">' +
         '<div class="who' + (t.him ? " him" : "") + '">' + t.who + "</div>" +
         '<div style="flex:1">' +
           '<div class="tno">' + t.no + ' <span class="tag ' + (t.him ? "blue" : "gold") + '">' + t.from + " → " + t.to + "</span></div>" +
           '<div class="muted">' + t.dep + ' 发 → <span class="arr">' + t.arr + " 抵达</span> · " + t.dur + " · 二等座 " + t.price + "</div>" +
         "</div></div>";
-    }).join(""));
+    }).join("");
+  }
 
+  /* 景区/美食横跨洛阳、开封两座城市，按城市插一条小标题 */
+  function byCity(list, cardFn) {
+    var out = "", cur = "";
+    (list || []).forEach(function (it) {
+      if (it.city && it.city !== cur) {
+        cur = it.city;
+        out += '<div class="sec">' + escHtml(cur) + "</div>";
+      }
+      out += cardFn(it);
+    });
+    return out;
+  }
+
+  function renderHome() {
+    setHtml("trains", trainBlock(D.trains));
     setHtml("arrivalNotice", '<div class="notice">' + D.arrivalNotice + "</div>");
+
+    setHtml("returnTrains", trainBlock(D.returnTrains));
+    setHtml("returnNotice", D.returnNote ? '<div class="notice danger">' + D.returnNote + "</div>" : "");
 
     setHtml("weather", D.weather.map(function (w) {
       return '<div class="wcell"><div class="d">' + w.d + '</div><div class="ic">' + w.icon + "</div><div>" + w.desc + '</div><div class="t">' + w.t + "</div></div>";
@@ -142,6 +162,7 @@
      路线：每天怎么走
      ====================================================================== */
   function renderLegs() {
+    if (D.route.transfer) setHtml("routeTransfer", D.route.transfer);
     setHtml("legsByDay", D.route.legsByDay.map(function (day) {
       return '<div class="card"><h4>' + day.h4 + "</h4>" + day.legs.map(function (l) {
         return '<div class="leg">' +
@@ -157,7 +178,7 @@
      景区 / 美食 / 交通
      ====================================================================== */
   function renderSights() {
-    setHtml("sights", D.sights.map(function (s) {
+    setHtml("sights", byCity(D.sights, function (s) {
       return "<details" + (s.open ? " open" : "") + ">" +
         '<summary><span class="ttl"><span class="no">' + s.no + "</span>" + s.name + tagsHtml(s.tags) +
         '</span><span class="arrow">▶</span></summary>' +
@@ -167,19 +188,19 @@
           }).join("") +
           (s.btns ? '<div class="btnrow">' + s.btns.map(btnHtml).join("") + "</div>" : "") +
         "</div></details>";
-    }).join(""));
+    }));
   }
 
   function renderFoods() {
     setHtml("foodNotice", D.foodNotice);
-    setHtml("foods", D.foods.map(function (f) {
+    setHtml("foods", byCity(D.foods, function (f) {
       return "<details" + (f.open ? " open" : "") + ">" +
         '<summary><span class="ttl"><span class="no">' + f.no + "</span>" + f.name + tagsHtml(f.tags) +
         '</span><span class="arrow">▶</span></summary>' +
         '<div class="detail-body">' + f.body +
           (f.btns ? '<div class="btnrow">' + f.btns.map(btnHtml).join("") + "</div>" : "") +
         "</div></details>";
-    }).join(""));
+    }));
 
     setHtml("souvenir",
       "<h3>" + D.souvenir.title + "</h3>" +
@@ -273,45 +294,20 @@
   }
 
   /* ======================================================================
-     真实地图（高德 JS API 2.0）—— 15 个地点落在真实坐标上，按天着色/筛选
-     Key 直接读 D.route.amap（公开客户端密钥，绑域名白名单），两台手机免配置
+     真实地图（高德 JS API 2.0）
+     每个城市一张图，节点落在真实坐标上，按天着色 + 按天筛选
+     Key 读 D.route.amap（公开客户端密钥，绑域名白名单），两台手机免配置
      ====================================================================== */
   function initAmap() {
-    var A = D.route.amap || {};
-    var box = $("amapBox");
-    if (!box || !A.key) return;
+    var R = D.route || {};
+    var A = R.amap || {};
+    if (!A.key) return;
 
-    var R = D.route;
-    var DAYC = R.dayColors, DAYN = R.dayNames;
-    var nodes = (R.defaultNodes || []).filter(function (n) { return n.lng && n.lat; });
-    var edges = R.defaultEdges || [];
-
-    var map = null, loading = null, infoWin = null;
-    var markers = [], lines = [];
-    var on = {};                                   /* 每天的显隐开关，默认全开 */
-    Object.keys(DAYN).forEach(function (d) { on[d] = true; });
-
-    function nodeById(id) {
-      for (var i = 0; i < nodes.length; i++) if (nodes[i].id === id) return nodes[i];
-      return null;
-    }
+    var DAYC = R.dayColors || {}, DAYN = R.dayNames || {};
+    var cities = R.cities || [];
     function colorOf(day) { return DAYC[day] || "#8a7a6a"; }
 
-    /* 一条折线归属「目的地」所在的那一天：hotel→gm 算 D4（那天才去古墓），
-       这样按天筛选的结果和每天的日程完全对得上 */
-    function edgeDay(e) {
-      var to = nodeById(e[1]);
-      return to ? to.day : null;
-    }
-
-    function msg(text, isErr) {
-      var el = $("amapMsg");
-      if (!el) return;
-      el.style.display = text ? "block" : "none";
-      el.textContent = text || "";
-      el.style.color = isErr ? "var(--verm-d)" : "var(--sub)";
-    }
-
+    var loading = null;
     function loadScript() {
       if (loading) return loading;
       loading = new Promise(function (resolve, reject) {
@@ -326,131 +322,149 @@
       return loading;
     }
 
-    function markerHtml(n) {
-      return '<div class="amk" style="--c:' + colorOf(n.day) + '">' +
-             "<i></i><b>" + escHtml(n.name) + "</b></div>";
-    }
+    /* 一张城市地图 = 一个独立实例：自己的容器、筛选条、图例、显隐状态 */
+    function makeCity(city) {
+      var suf = "_" + city.id;
+      var box = $("amapBox" + suf);
+      if (!box) return null;
 
-    function infoHtml(n) {
-      return '<div class="aminfo"><h5>' + escHtml(n.name) + "</h5>" +
-             '<p class="d">' + escHtml(DAYN[n.day] || "") + "</p>" +
-             '<a class="btn amap" href="' + amapUri(n.kw || n.name) + '">去这里 · 高德导航</a></div>';
-    }
+      var nodes = (city.nodes || []).filter(function (n) { return n.lng && n.lat; });
+      var edges = city.edges || [];
+      var days = city.days || [];
+      var map = null, infoWin = null, markers = [], lines = [];
+      var on = {};
+      days.forEach(function (d) { on[d] = true; });
 
-    function draw(AMap) {
-      map = new AMap.Map("amapBox", {
-        zoom: 12,
-        center: [112.454, 34.619],
-        viewMode: "2D"
-      });
-      infoWin = new AMap.InfoWindow({ offset: new AMap.Pixel(0, -10) });
+      function nodeById(id) {
+        for (var i = 0; i < nodes.length; i++) if (nodes[i].id === id) return nodes[i];
+        return null;
+      }
+      /* 折线归属「目的地」所在的那一天，这样按天筛选和当天日程对得上 */
+      function edgeDay(e) { var to = nodeById(e[1]); return to ? to.day : null; }
 
-      nodes.forEach(function (n) {
-        var mk = new AMap.Marker({
-          position: [n.lng, n.lat],
-          content: markerHtml(n),
-          anchor: "left-center",
-          title: n.name,
-          zIndex: 100 + (n.day || 0),
-          map: map
+      function msg(text, isErr) {
+        var el = $("amapMsg" + suf);
+        if (!el) return;
+        el.style.display = text ? "block" : "none";
+        el.textContent = text || "";
+        el.style.color = isErr ? "var(--verm-d)" : "var(--sub)";
+      }
+
+      function markerHtml(n) {
+        return '<div class="amk" style="--c:' + colorOf(n.day) + '">' +
+               "<i></i><b>" + escHtml(n.name) + "</b></div>";
+      }
+      function infoHtml(n) {
+        return '<div class="aminfo"><h5>' + escHtml(n.name) + "</h5>" +
+               '<p class="d">' + escHtml(DAYN[n.day] || "") + "</p>" +
+               '<a class="btn amap" href="' + amapUri(n.kw || n.name) + '">去这里 · 高德导航</a></div>';
+      }
+
+      function draw(AMap) {
+        map = new AMap.Map("amapBox" + suf, {
+          zoom: city.zoom || 12,
+          center: city.center,
+          viewMode: "2D"
         });
-        mk.on("click", function () {
-          infoWin.setContent(infoHtml(n));
-          infoWin.open(map, [n.lng, n.lat]);
+        infoWin = new AMap.InfoWindow({ offset: new AMap.Pixel(0, -10) });
+
+        nodes.forEach(function (n) {
+          var mk = new AMap.Marker({
+            position: [n.lng, n.lat], content: markerHtml(n),
+            anchor: "left-center", title: n.name,
+            zIndex: 100 + (n.day || 0), map: map
+          });
+          mk.on("click", function () {
+            infoWin.setContent(infoHtml(n));
+            infoWin.open(map, [n.lng, n.lat]);
+          });
+          mk.__day = n.day;
+          markers.push(mk);
         });
-        mk.__day = n.day;
-        markers.push(mk);
-      });
 
-      edges.forEach(function (e) {
-        var a = nodeById(e[0]), b = nodeById(e[1]);
-        if (!a || !b) return;
-        var d = edgeDay(e);
-        var pl = new AMap.Polyline({
-          path: [[a.lng, a.lat], [b.lng, b.lat]],
-          strokeColor: colorOf(d),
-          strokeWeight: 3,
-          strokeOpacity: 0.85,
-          lineJoin: "round",
-          lineCap: "round",
-          showDir: true,
-          zIndex: 50,
-          map: map
+        edges.forEach(function (e) {
+          var a = nodeById(e[0]), b = nodeById(e[1]);
+          if (!a || !b) return;
+          var d = edgeDay(e);
+          var pl = new AMap.Polyline({
+            path: [[a.lng, a.lat], [b.lng, b.lat]],
+            strokeColor: colorOf(d), strokeWeight: 3, strokeOpacity: 0.85,
+            lineJoin: "round", lineCap: "round", showDir: true, zIndex: 50, map: map
+          });
+          pl.__day = d;
+          lines.push(pl);
         });
-        pl.__day = d;
-        lines.push(pl);
-      });
 
-      /* 让 15 个点全部进画面（白马寺在城东 15 公里外，必须 fit） */
-      map.setFitView(null, false, [70, 70, 70, 70]);
+        map.setFitView(null, false, [70, 70, 70, 70]);
 
-      /* 装下全域时缩放只有 11，老城那 5 个点挤在 2 公里内、标签会糊成一团。
-         低缩放只显示圆点，放大到 12 级以上再显示名称。 */
-      map.on("zoomend", syncLabelMode);
-      syncLabelMode();
-      applyFilter();
-    }
-
-    function syncLabelMode() {
-      if (map && box) box.classList.toggle("zoomed-out", map.getZoom() < 12);
-    }
-
-    function applyFilter() {
-      markers.forEach(function (mk) { on[mk.__day] ? mk.show() : mk.hide(); });
-      lines.forEach(function (pl) { on[pl.__day] ? pl.show() : pl.hide(); });
-    }
-
-    function buildFilter() {
-      var wrap = $("amapFilter");
-      if (!wrap) return;
-      wrap.innerHTML = Object.keys(DAYN).map(function (d) {
-        return '<button type="button" class="daychip on" data-day="' + d +
-               '" style="--c:' + colorOf(d) + '"><i></i>' + escHtml(DAYN[d]) + "</button>";
-      }).join("") + '<button type="button" class="daychip all" data-day="all">全部显示</button>';
-
-      wrap.addEventListener("click", function (ev) {
-        var btn = ev.target.closest ? ev.target.closest(".daychip") : null;
-        if (!btn) return;
-        var d = btn.getAttribute("data-day");
-        if (d === "all") {
-          Object.keys(DAYN).forEach(function (k) { on[k] = true; });
-        } else {
-          on[d] = !on[d];
-        }
-        wrap.querySelectorAll(".daychip").forEach(function (b) {
-          var bd = b.getAttribute("data-day");
-          if (bd === "all") return;
-          b.classList.toggle("on", !!on[bd]);
-        });
+        /* 装下全域时缩放很小，老城那一片会挤成一团：低缩放只留圆点，放大再显示名称 */
+        map.on("zoomend", syncLabelMode);
+        syncLabelMode();
         applyFilter();
-      });
-    }
+      }
 
-    function buildLegend() {
-      var el = $("alegend");
-      if (!el) return;
-      el.innerHTML = Object.keys(DAYN).map(function (d) {
-        return "<span><i style='background:" + colorOf(d) + "'></i>" + escHtml(DAYN[d]) + "</span>";
-      }).join("");
-    }
+      function syncLabelMode() {
+        if (map && box) box.classList.toggle("zoomed-out", map.getZoom() < (city.labelZoom || 12));
+      }
+      function applyFilter() {
+        markers.forEach(function (mk) { on[mk.__day] ? mk.show() : mk.hide(); });
+        lines.forEach(function (pl) { on[pl.__day] ? pl.show() : pl.hide(); });
+      }
 
-    function ensure() {
-      if (map) { map.resize(); return; }
-      loadScript()
-        .then(function () { draw(window.AMap); msg(""); })
-        .catch(function (e) {
-          msg("地图加载失败：" + e.message + "（行程文字不受影响）", true);
-          loading = null;
+      function buildFilter() {
+        var wrap = $("amapFilter" + suf);
+        if (!wrap) return;
+        wrap.innerHTML = days.map(function (d) {
+          return '<button type="button" class="daychip on" data-day="' + d +
+                 '" style="--c:' + colorOf(d) + '"><i></i>' + escHtml(DAYN[d] || ("D" + d)) + "</button>";
+        }).join("") + '<button type="button" class="daychip all" data-day="all">全部显示</button>';
+
+        wrap.addEventListener("click", function (ev) {
+          var btn = ev.target.closest ? ev.target.closest(".daychip") : null;
+          if (!btn) return;
+          var d = btn.getAttribute("data-day");
+          if (d === "all") { days.forEach(function (k) { on[k] = true; }); }
+          else { on[d] = !on[d]; }
+          wrap.querySelectorAll(".daychip").forEach(function (b) {
+            var bd = b.getAttribute("data-day");
+            if (bd === "all") return;
+            b.classList.toggle("on", !!on[bd]);
+          });
+          applyFilter();
         });
+      }
+
+      function buildLegend() {
+        var el = $("alegend" + suf);
+        if (!el) return;
+        el.innerHTML = days.map(function (d) {
+          return "<span><i style='background:" + colorOf(d) + "'></i>" + escHtml(DAYN[d] || ("D" + d)) + "</span>";
+        }).join("");
+      }
+
+      function ensure() {
+        if (map) { map.resize(); return; }
+        loadScript()
+          .then(function () { draw(window.AMap); msg(""); })
+          .catch(function (e) {
+            msg("地图加载失败：" + e.message + "（行程文字不受影响）", true);
+            loading = null;
+          });
+      }
+
+      buildFilter();
+      buildLegend();
+      msg("地图加载中…");
+      return { ensure: ensure };
     }
 
-    buildFilter();
-    buildLegend();
-    msg("地图加载中…");
+    var insts = cities.map(makeCity).filter(Boolean);
 
     /* 地图容器在隐藏 tab 里尺寸为 0，必须等 tab 显示后再初始化 */
-    onTabShow("p-route", ensure);
-    if ($("p-route") && $("p-route").classList.contains("active")) ensure();
+    onTabShow("p-route", function () { insts.forEach(function (m) { m.ensure(); }); });
+    if ($("p-route") && $("p-route").classList.contains("active")) {
+      insts.forEach(function (m) { m.ensure(); });
+    }
   }
 
   /* ======================================================================

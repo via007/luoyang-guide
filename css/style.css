@@ -256,10 +256,13 @@ details[open] summary{border-bottom:1px solid var(--line);background:linear-grad
 .navline .nm{flex:1;font-weight:600}
 .navline a{flex-shrink:0;text-decoration:none;font-size:11.5px;padding:6px 14px;border-radius:9px}
 
-/* ---------- 路线地图 ---------- */
-#amapBox{width:100%;height:56vh;min-height:300px;max-height:540px;border-radius:12px;overflow:hidden;background:var(--paper2)}
-#amapMsg{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.7;display:none}
-#amapFilter{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+/* ---------- 路线地图（两座城市各一张卡，所以用 class 不用 id） ---------- */
+.maphead{display:flex;align-items:baseline;gap:9px;padding:2px 4px 9px}
+.maphead b{font-family:var(--serif);font-size:16px;color:var(--verm-d);letter-spacing:1px}
+.maphead span{font-size:11.5px;color:var(--sub)}
+.amapbox{width:100%;height:48vh;min-height:280px;max-height:460px;border-radius:12px;overflow:hidden;background:var(--paper2)}
+.amapmsg{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.7;display:none}
+.amapfilter{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .daychip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--paper2);
   border-radius:99px;padding:6px 12px;font-size:12px;color:var(--sub);cursor:pointer;font-family:var(--sans);
   opacity:.45;transition:opacity .2s,border-color .2s,background .2s}
@@ -279,8 +282,8 @@ details[open] summary{border-bottom:1px solid var(--line);background:linear-grad
 .amk i{width:12px;height:12px;border-radius:50%;background:var(--c);border:2px solid #fff;
   box-shadow:0 1px 4px rgba(0,0,0,.45);flex-shrink:0}
 /* 缩小到全域视野时藏起名称，只留圆点，避免老城区几个点糊成一团 */
-#amapBox.zoomed-out .amk b{display:none}
-#amapBox.zoomed-out .amk{margin-left:-7px}
+.amapbox.zoomed-out .amk b{display:none}
+.amapbox.zoomed-out .amk{margin-left:-7px}
 /* 信息窗 */
 .aminfo{padding:11px 13px;min-width:150px;font-family:var(--sans)}
 .aminfo h5{font-family:var(--serif);font-size:14px;margin:0 0 3px;color:var(--ink)}

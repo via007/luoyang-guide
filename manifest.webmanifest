@@ -1,7 +1,7 @@
 {
-  "name": "洛阳 · 神都行 | 国庆双人游",
-  "short_name": "神都行",
-  "description": "洛阳国庆五天双人游攻略：行程、路线、景区、美食、交通、备忘清单。",
+  "name": "洛阳 · 开封 | 双城行 · 国庆双人游",
+  "short_name": "双城行",
+  "description": "国庆洛阳 + 开封六天双人游攻略：行程、路线地图、景区、美食、交通、备忘清单。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

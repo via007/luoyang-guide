@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>洛阳 · 神都行 | 国庆双人游</title>
-<meta name="description" content="洛阳国庆五天双人游攻略：行程、路线、景区、美食、交通、备忘清单。">
+<title>洛阳 · 开封 | 双城行 · 国庆双人游</title>
+<meta name="description" content="国庆洛阳 + 开封六天双人游攻略：行程、路线地图、景区、美食、交通、备忘清单。">
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -46,6 +46,10 @@
     <div id="trains"></div>
     <div id="arrivalNotice"></div>
 
+    <div class="sec">返程车次（10月6日）</div>
+    <div id="returnTrains"></div>
+    <div id="returnNotice"></div>
+
     <div class="sec">住宿</div>
     <div id="stays"></div>
 
@@ -55,7 +59,7 @@
       <div class="btnrow" id="weatherBtns"></div>
     </div>
 
-    <div class="sec">五天概览</div>
+    <div class="sec">六天概览</div>
     <div class="card" style="padding:8px 0 4px">
       <table class="ptable bare" style="border:none"><tbody id="overview"></tbody></table>
     </div>
@@ -73,14 +77,25 @@
   <!-- ================= 路线 ================= -->
   <section class="tabpage" id="p-route">
     <div class="sec">路线地图 · 真实定位</div>
+    <p id="rhint" style="margin:0 2px 12px">
+      <b>点标记</b>看是第几天、一键跳高德导航 · 每张图上方的按天开关可只看某一天 · 双指缩放 / 拖动查看
+    </p>
+    <div class="notice" id="routeTransfer" style="font-size:13px"></div>
+
     <div class="card" style="padding:10px">
-      <div id="amapBox"></div>
-      <p id="amapMsg"></p>
-      <div id="amapFilter"></div>
-      <div class="rlegend" id="alegend"></div>
-      <p id="rhint">
-        <b>点标记</b>看是第几天、一键跳高德导航 · 上方按天开关可只看某一天 · 双指缩放 / 拖动查看
-      </p>
+      <div class="maphead"><b>洛阳</b><span>10/1 – 10/3 · 3 天</span></div>
+      <div class="amapbox" id="amapBox_ly"></div>
+      <p class="amapmsg" id="amapMsg_ly"></p>
+      <div class="amapfilter" id="amapFilter_ly"></div>
+      <div class="rlegend" id="alegend_ly"></div>
+    </div>
+
+    <div class="card" style="padding:10px">
+      <div class="maphead"><b>开封</b><span>10/4 – 10/5 · 2 天</span></div>
+      <div class="amapbox" id="amapBox_kf"></div>
+      <p class="amapmsg" id="amapMsg_kf"></p>
+      <div class="amapfilter" id="amapFilter_kf"></div>
+      <div class="rlegend" id="alegend_kf"></div>
     </div>
 
     <div class="sec">每天怎么走（距离 + 公交地铁）</div>
