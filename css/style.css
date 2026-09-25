@@ -427,3 +427,82 @@ nav button.on .ic{color:var(--verm);transform:none}
 @media(max-width:390px){.hero-meta .hm .s{display:none}.hero h1{font-size:32px}.focus-main>strong{font-size:33px}.ticket-line b{font-size:24px}}
 @media(prefers-reduced-motion:reduce){.tabpage.active,.daycard.active{animation:none}html{scroll-behavior:auto}}
 .map-caveat{margin:10px 2px 16px;color:var(--sub);font-size:12px;line-height:1.65}
+
+/* 唐 · 宋视觉章节：插画只作背景，时间和地址保持可读 */
+:root{--verm:#a84936;--verm-d:#873929;--gold:#b98a4b;--ink:#253d38}
+.hero{
+  min-height:360px;border-bottom:0;
+  background-image:linear-gradient(180deg,rgba(16,30,28,.76) 0%,rgba(16,30,28,.20) 40%,rgba(16,30,28,.88) 100%),url("../art/luoyang-tang.jpg");
+  background-size:cover;background-position:center 48%;
+}
+.song-header .hero{background-image:linear-gradient(180deg,rgba(16,30,28,.76) 0%,rgba(16,30,28,.20) 40%,rgba(16,30,28,.88) 100%),url("../art/kaifeng-song.jpg")}
+.hero::before{opacity:.08;background-image:repeating-linear-gradient(90deg,transparent 0 47px,#f6e0ad 48px)}
+.hero::after{display:none}
+.hero-inner{min-height:360px;display:flex;flex-direction:column;justify-content:flex-end;padding:28px 24px 24px}
+.compact-header .hero,.compact-header .hero-inner{min-height:150px}
+.compact-header .hero-inner{padding-top:22px;padding-bottom:18px}
+.compact-header .hero-top{margin:0}
+.compact-header .hero h1{font-size:29px;margin-top:7px}
+.compact-header .hero .sub{display:none}
+.compact-header .hero-meta,.compact-header .hero-foot{display:none}
+.hero-top{margin-bottom:auto}
+.hero h1{margin-top:18px;font-size:clamp(37px,6vw,58px);letter-spacing:5px;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.hero-kicker{color:#f4d8a5;text-shadow:0 1px 5px rgba(0,0,0,.35)}
+.hero .sub{color:#fff6e7;text-shadow:0 1px 7px rgba(0,0,0,.7)}
+.hero-meta{margin-top:32px;border-top:1px solid rgba(255,245,222,.42)}
+.hero-meta .hm .l{color:#f5d9aa}
+.hero-foot{border-top:1px solid rgba(255,245,222,.22);padding-top:13px}
+.themebtn{background:rgba(20,35,32,.4);backdrop-filter:blur(8px)}
+.section-label{color:var(--sub);font-size:10px;letter-spacing:2.5px}
+.sec{font-family:var(--serif);font-size:20px;letter-spacing:1px}
+.sec::before{width:16px;height:2px;background:var(--verm);border-radius:0}
+.city-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.city-scene{position:relative;min-height:184px;border-radius:15px;overflow:hidden;background:#263a34;box-shadow:0 10px 24px rgba(24,39,34,.14);border:1px solid rgba(132,91,56,.2)}
+.city-scene img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.tang-scene img{object-position:52% center}
+.song-scene img{object-position:50% center}
+.city-scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 12%,rgba(14,26,24,.18) 40%,rgba(13,28,26,.88) 100%)}
+.city-scene figcaption{position:absolute;z-index:1;left:15px;right:12px;bottom:14px;color:#fff8e8;display:flex;flex-direction:column;line-height:1.35;text-shadow:0 1px 6px rgba(0,0,0,.65)}
+.city-scene small{font-size:10px;letter-spacing:1px;color:#f2d5a8}
+.city-scene strong{font:700 26px/1.2 var(--serif);letter-spacing:4px;margin:4px 0}
+.city-scene span{font-size:11px}
+.focus-card{border-radius:15px;box-shadow:0 10px 24px rgba(38,56,49,.08)}
+.focus-kicker{background:#294840}
+.focus-main>strong{color:var(--verm-d)}
+.overview-list{border-radius:12px}
+.overview-row{grid-template-columns:48px 30px 1fr;padding:13px 15px}
+.overview-row:nth-child(n+4)>span{color:#31665e}
+.daycard{margin-top:17px}
+.dayhead{position:relative;min-height:188px;padding:24px 20px 20px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;border-radius:16px 16px 0 0;color:#fff8e8;
+  background-size:cover;background-position:center 52%;
+  box-shadow:0 8px 20px rgba(28,42,37,.09)}
+#d1 .dayhead,#d2 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,27,26,.83)),url("../art/luoyang-tang.jpg")}
+#d3 .dayhead{background-image:linear-gradient(180deg,rgba(18,25,39,.1),rgba(18,25,39,.86)),url("../art/yingtian-tang.jpg")}
+#d4 .dayhead,#d5 .dayhead,#d6 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,30,29,.86)),url("../art/kaifeng-song.jpg")}
+.day-era{align-self:flex-start;border:1px solid rgba(255,246,220,.6);border-radius:3px;padding:3px 8px;font-size:10px;letter-spacing:2px;color:#ffe2ad;background:rgba(16,30,29,.28);margin-bottom:10px}
+.dayhead .dnum{display:block;position:absolute;right:18px;top:5px;font:700 88px/1 var(--serif);color:rgba(255,244,217,.24)}
+.dayhead .dttl{position:relative;font-size:27px;color:#fff8e8;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.45)}
+.dayhead .dsub{position:relative;color:#f4e4c9;font-size:12px;letter-spacing:1px;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.daycard>.card{border-radius:0 0 16px 16px;border-top:0;box-shadow:0 10px 24px rgba(28,42,37,.08);padding-top:19px}
+.daypill.on{background:#a84936;border-color:#a84936;color:#fff}
+#p-plan.song-era .daypill.on{background:#31665e;border-color:#31665e}
+.daycard.song .tl::before{background:#31665e}
+.daycard.song .tl .time{color:#31665e}
+.ticket-date{border-bottom:1px solid var(--line);padding-bottom:6px}
+.ticket-date::before{content:"";width:4px;height:21px;background:var(--verm);border-radius:3px}
+.ticket-card{border-radius:12px}
+nav{background:color-mix(in srgb,var(--card) 96%,transparent);border-radius:14px;border-top:2px solid var(--gold)}
+@media (min-width:700px){
+  .hero,.hero-inner{min-height:420px}
+  .city-scene{min-height:230px}
+  .dayhead{min-height:230px}
+}
+@media (max-width:390px){
+  .hero,.hero-inner{min-height:360px}
+  .hero-inner{padding-left:19px;padding-right:19px}
+  .hero h1{font-size:35px}
+  .city-scene{min-height:165px}
+  .city-scene figcaption{left:11px;bottom:11px}
+  .city-scene strong{font-size:23px}
+  .city-scene span{font-size:10px}
+}

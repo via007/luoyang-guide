@@ -8,6 +8,7 @@
   <title>洛阳 · 开封｜国庆行程</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preload" as="image" href="art/luoyang-tang.jpg">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -30,8 +31,17 @@
     <section class="tabpage active" id="p-home" aria-label="概览">
       <div class="section-label"><span>01 / 出行概览</span><span>先看关键时间</span></div>
       <div class="focus-card" id="nextMove"></div>
-      <div class="sec">三段路程</div>
-      <div class="journey-summary" id="journeySummary"></div>
+      <div class="sec">一程双城</div>
+      <div class="city-gallery">
+        <figure class="city-scene tang-scene">
+          <img src="art/yingtian-tang.jpg" alt="唐风应天门夜景主题插画" loading="lazy">
+          <figcaption><small>10/1 — 10/3 · 大唐神都</small><strong>洛阳</strong><span>龙门石窟 · 应天门</span></figcaption>
+        </figure>
+        <figure class="city-scene song-scene">
+          <img src="art/kaifeng-song.jpg" alt="宋风汴京桥与市井主题插画" loading="lazy">
+          <figcaption><small>10/4 — 10/6 · 大宋东京</small><strong>开封</strong><span>清明上河园 · 古城</span></figcaption>
+        </figure>
+      </div>
       <div class="sec">六天安排</div>
       <div class="overview-list" id="overview"></div>
       <p class="home-hint">具体时刻和站名见「车票」，当天细节见「每日」。</p>

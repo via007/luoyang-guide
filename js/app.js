@@ -100,16 +100,6 @@
       '</strong><div><b>' + escHtml(next.no) + ' · ' + escHtml(next.who) + '</b><span>' + escHtml(next.from) + ' → ' + escHtml(next.to) +
       '</span></div></div><div class="focus-foot">' + escHtml(next.note) + '</div>');
 
-    var groups = [
-      { day: '10/1', title: '抵达洛阳', summary: 'L 17:36 到 · H 21:35 到' },
-      { day: '10/4', title: '转场开封', summary: '11:16 发 · 12:19 到' },
-      { day: '10/6', title: '分别返程', summary: 'L 14:31 左右出发 · H 19:07 出发' }
-    ];
-    setHtml("journeySummary", groups.map(function (g, i) {
-      return '<div class="journey-row"><span class="journey-index">0' + (i + 1) + '</span><span class="journey-date">' + g.day +
-        '</span><div><b>' + g.title + '</b><small>' + g.summary + '</small></div></div>';
-    }).join(""));
-
     setHtml("weather", D.weather.map(function (w) {
       return '<div class="wcell"><div class="d">' + w.d + '</div><div class="ic">' + w.icon + "</div><div>" + w.desc + '</div><div class="t">' + w.t + "</div></div>";
     }).join(""));
@@ -162,6 +152,7 @@
   function renderPlan() {
     var dayOfMonth = new Date().getMonth() === 9 ? new Date().getDate() : 1;
     var selected = Math.max(0, Math.min(5, dayOfMonth - 1));
+    $("p-plan").classList.toggle("song-era", selected >= 3);
     setHtml("dayPills", D.days.map(function (d, i) {
       return '<button class="daypill' + (i === selected ? " on" : "") + '" data-d="' + d.id + '" type="button">' + d.pill + "</button>";
     }).join(""));
@@ -184,8 +175,9 @@
         out += '<details class="day-extra"><summary>今天怎么走 <span class="arrow">＋</span></summary><div class="detail-body">' + d.legs.map(legHtml).join("") + "</div></details>";
       }
 
-      return '<div class="daycard' + (D.days.indexOf(d) === selected ? ' active' : '') + '" id="' + d.id + '">' +
-        '<div class="dayhead"><span class="dnum">' + d.numCn + '</span><span class="dttl">' + d.date + " · " + d.dow +
+      var song = D.days.indexOf(d) >= 3;
+      return '<div class="daycard' + (song ? ' song' : ' tang') + (D.days.indexOf(d) === selected ? ' active' : '') + '" id="' + d.id + '">' +
+        '<div class="dayhead"><span class="day-era">' + (song ? '大宋 · 东京汴梁' : '大唐 · 神都洛阳') + '</span><span class="dnum">' + d.numCn + '</span><span class="dttl">' + d.date + " · " + d.dow +
         '</span><span class="dsub">' + d.sub + "</span></div>" +
         '<div class="card">' + out + "</div></div>";
     }).join(""));
@@ -199,7 +191,12 @@
       btn.classList.add("on");
       $("dayList").querySelectorAll(".daycard").forEach(function (x) { x.classList.remove("active"); });
       var el = $(btn.getAttribute("data-d"));
-      if (el) { el.classList.add("active"); window.scrollTo({ top: 0, behavior: "smooth" }); }
+      if (el) {
+        el.classList.add("active");
+        $("p-plan").classList.toggle("song-era", el.classList.contains("song"));
+        document.body.classList.toggle("song-header", el.classList.contains("song"));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     });
   }
 
@@ -516,6 +513,8 @@
         document.querySelectorAll(".tabpage").forEach(function (p) { p.classList.remove("active"); });
         var t = $(b.getAttribute("data-p"));
         if (t) t.classList.add("active");
+        document.body.classList.toggle("compact-header", b.getAttribute("data-p") !== "p-home");
+        document.body.classList.toggle("song-header", b.getAttribute("data-p") === "p-plan" && $("p-plan").classList.contains("song-era"));
         fireTabShow(b.getAttribute("data-p"));
         window.scrollTo(0, 0);
       });
