@@ -16,20 +16,18 @@
     <div class="hero-inner">
       <div class="hero-top">
         <div>
-          <div class="hero-kicker">二〇二六 · 国庆双城行</div>
+          <div class="hero-kicker">二〇二六 · 10月1日—6日</div>
           <h1 id="heroTitle"></h1>
           <div class="sub" id="heroSub"></div>
         </div>
         <button class="themebtn" id="themeBtn" type="button" title="切换深浅色" aria-label="切换深浅色">◐</button>
       </div>
-      <div class="hero-meta" id="heroMeta"></div>
-      <div class="hero-foot"><div class="countdown" id="cd"></div><div class="syncbar" id="syncBar"><span class="dot"></span><span id="syncText">本机保存</span></div></div>
     </div>
   </header>
 
   <main>
     <section class="tabpage active" id="p-home" aria-label="概览">
-      <div class="section-label"><span>01 / 出行概览</span><span>先看关键时间</span></div>
+      <div class="section-label"><span>01 / 出行概览</span></div>
       <div class="focus-card" id="nextMove"></div>
       <div class="sec">一程双城</div>
       <div class="city-gallery">
@@ -44,17 +42,16 @@
       </div>
       <div class="sec">六天安排</div>
       <div class="overview-list" id="overview"></div>
-      <p class="home-hint">具体时刻和站名见「车票」，当天细节见「每日」。</p>
     </section>
 
     <section class="tabpage" id="p-plan" aria-label="每日行程">
-      <div class="section-label"><span>02 / 每日行程</span><span>一次只看一天</span></div>
+      <div class="section-label"><span>02 / 每日行程</span></div>
       <div class="daypills" id="dayPills"></div>
       <div id="dayList"></div>
     </section>
 
     <section class="tabpage" id="p-trans" aria-label="车票">
-      <div class="section-label"><span>03 / 车票时刻</span><span>以订单为准</span></div>
+      <div class="section-label"><span>03 / 车票时刻</span></div>
       <div id="trainRows"></div>
       <div class="notice danger" id="trainNote"></div>
       <details class="resource-group"><summary><span>市内交通</span><span class="arrow">＋</span></summary><div class="detail-body" id="intraCity"></div></details>
@@ -62,15 +59,15 @@
     </section>
 
     <section class="tabpage" id="p-route" aria-label="地图">
-      <div class="section-label"><span>04 / 路线地图</span><span>按城市查看</span></div>
+      <div class="section-label"><span>04 / 路线地图</span></div>
       <div class="notice" id="routeTransfer"></div>
-      <p class="map-caveat">住宿点按截图地址标在地图上；部分标记是附近位置。到店时点击标记，用酒店名称与完整地址导航。</p>
+      <p class="map-caveat">住宿点标记为附近位置；到店请用酒店名称与完整地址导航。</p>
       <div class="card map-card"><div class="maphead"><b>洛阳</b><span>10/1 — 10/3</span></div><div class="amapbox" id="amapBox_ly"></div><p class="amapmsg" id="amapMsg_ly"></p><div class="amapfilter" id="amapFilter_ly"></div><div class="rlegend" id="alegend_ly"></div></div>
       <div class="card map-card"><div class="maphead"><b>开封</b><span>10/4 — 10/5</span></div><div class="amapbox" id="amapBox_kf"></div><p class="amapmsg" id="amapMsg_kf"></p><div class="amapfilter" id="amapFilter_kf"></div><div class="rlegend" id="alegend_kf"></div></div>
     </section>
 
     <section class="tabpage" id="p-more" aria-label="资料">
-      <div class="section-label"><span>05 / 行前资料</span><span>需要时再展开</span></div>
+      <div class="section-label"><span>05 / 行前资料</span></div>
       <details class="resource-group"><summary><span>住宿 <small>4 处</small></span><span class="arrow">＋</span></summary><div class="resource-content" id="stays"></div></details>
       <details class="resource-group"><summary><span>预约与待办</span><span class="arrow">＋</span></summary><div class="resource-content"><div id="bookingTimeline" class="booking-list"></div><div id="checkBooking"></div><div class="progress"><i id="pbBooking"></i></div><div class="progress-label" id="plBooking"></div></div></details>
       <details class="resource-group"><summary><span>景点速查</span><span class="arrow">＋</span></summary><div class="resource-content" id="sights"></div></details>

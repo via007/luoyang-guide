@@ -7,7 +7,7 @@
 
    ⚠️ 每次部署改了 css/js，把 VERSION 号 +1，否则手机会一直用旧缓存。
    ========================================================================== */
-var VERSION = "v9";
+var VERSION = "v10";
 var CACHE = "shendu-" + VERSION;
 
 var SHELL = [
@@ -20,6 +20,9 @@ var SHELL = [
   "./art/luoyang-tang.jpg",
   "./art/yingtian-tang.jpg",
   "./art/kaifeng-song.jpg",
+  "./art/luoyi-night.jpg",
+  "./art/qingming-garden.jpg",
+  "./art/wansui-martial.jpg",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

@@ -445,7 +445,7 @@ nav button.on .ic{color:var(--verm);transform:none}
 .compact-header .hero h1{font-size:29px;margin-top:7px}
 .compact-header .hero .sub{display:none}
 .compact-header .hero-meta,.compact-header .hero-foot{display:none}
-.hero-top{margin-bottom:auto}
+.hero-top{margin-bottom:0}
 .hero h1{margin-top:18px;font-size:clamp(37px,6vw,58px);letter-spacing:5px;text-shadow:0 2px 18px rgba(0,0,0,.55)}
 .hero-kicker{color:#f4d8a5;text-shadow:0 1px 5px rgba(0,0,0,.35)}
 .hero .sub{color:#fff6e7;text-shadow:0 1px 7px rgba(0,0,0,.7)}
@@ -476,9 +476,12 @@ nav button.on .ic{color:var(--verm);transform:none}
 .dayhead{position:relative;min-height:188px;padding:24px 20px 20px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;border-radius:16px 16px 0 0;color:#fff8e8;
   background-size:cover;background-position:center 52%;
   box-shadow:0 8px 20px rgba(28,42,37,.09)}
-#d1 .dayhead,#d2 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,27,26,.83)),url("../art/luoyang-tang.jpg")}
+#d1 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,27,26,.83)),url("../art/luoyang-tang.jpg")}
+#d2 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,27,26,.83)),url("../art/luoyi-night.jpg")}
 #d3 .dayhead{background-image:linear-gradient(180deg,rgba(18,25,39,.1),rgba(18,25,39,.86)),url("../art/yingtian-tang.jpg")}
-#d4 .dayhead,#d5 .dayhead,#d6 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,30,29,.86)),url("../art/kaifeng-song.jpg")}
+#d4 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,30,29,.86)),url("../art/qingming-garden.jpg")}
+#d5 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,30,29,.86)),url("../art/wansui-martial.jpg")}
+#d6 .dayhead{background-image:linear-gradient(180deg,rgba(18,32,30,.10),rgba(14,30,29,.86)),url("../art/kaifeng-song.jpg")}
 .day-era{align-self:flex-start;border:1px solid rgba(255,246,220,.6);border-radius:3px;padding:3px 8px;font-size:10px;letter-spacing:2px;color:#ffe2ad;background:rgba(16,30,29,.28);margin-bottom:10px}
 .dayhead .dnum{display:block;position:absolute;right:18px;top:5px;font:700 88px/1 var(--serif);color:rgba(255,244,217,.24)}
 .dayhead .dttl{position:relative;font-size:27px;color:#fff8e8;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.45)}

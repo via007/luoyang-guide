@@ -66,11 +66,6 @@
     var m = D.meta;
     setHtml("heroTitle", m.title);
     setHtml("heroSub", m.sub);
-    setHtml("heroSeal", m.seal);
-    setHtml("heroMeta",
-      '<div class="hm"><div class="l">出行</div><div class="v">' + m.dates + '</div><div class="s">' + m.datesSub + "</div></div>" +
-      '<div class="hm"><div class="l">人数</div><div class="v">' + m.people + '</div><div class="s">' + m.peopleSub + "</div></div>" +
-      '<div class="hm"><div class="l">天气</div><div class="v">' + m.weather + '</div><div class="s">' + m.weatherSub + "</div></div>");
   }
 
   function ticketHtml(t) {
@@ -103,7 +98,6 @@
     setHtml("weather", D.weather.map(function (w) {
       return '<div class="wcell"><div class="d">' + w.d + '</div><div class="ic">' + w.icon + "</div><div>" + w.desc + '</div><div class="t">' + w.t + "</div></div>";
     }).join(""));
-
     setHtml("weatherBtns", D.weatherBtns.map(btnHtml).join(""));
 
     setHtml("overview", D.overviewRows.map(function (r) {
@@ -502,7 +496,7 @@
   }
 
   /* ======================================================================
-     UI：tab / 倒计时 / 同步状态 / 主题
+     UI：tab / 主题
      ====================================================================== */
   function initTabs() {
     var btns = document.querySelectorAll("#nav button");
@@ -518,24 +512,6 @@
         fireTabShow(b.getAttribute("data-p"));
         window.scrollTo(0, 0);
       });
-    });
-  }
-
-  function initCountdown() {
-    var target = new Date(D.meta.countdownISO).getTime();
-    var el = $("cd");
-    if (!el) return;
-    var d = Math.ceil((target - Date.now()) / 86400000);
-    if (d > 0) el.innerHTML = "距出发还有 <b>" + d + "</b> 天";
-    else if (d === 0) el.innerHTML = "<b>今天出发</b> · 一路平安";
-    else el.innerHTML = "旅途愉快 · 神都欢迎你";
-  }
-
-  function initSyncBar() {
-    var bar = $("syncBar"), text = $("syncText");
-    window.Sync.onStatus(function (s) {
-      bar.className = "syncbar" + (s === "live" ? " live" : s === "error" ? " err" : " off");
-      text.textContent = s === "live" ? "已同步 · 两人共享" : s === "error" ? "离线保存（同步不可用）" : "本机保存";
     });
   }
 
@@ -594,8 +570,6 @@
 
     renderAll();
     initTabs();
-    initCountdown();
-    initSyncBar();
     initTheme();
     initSW();
 
