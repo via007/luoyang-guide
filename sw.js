@@ -1,13 +1,13 @@
 /* ==========================================================================
    sw.js —— 离线缓存
    策略：
-   · 同源 app shell：stale-while-revalidate（先给缓存秒开，后台悄悄更新）
+   · 同源 app shell：network-first（联网时优先展示最新行程，离线时回缓存）
    · 第三方 CDN（supabase-js）：network-first，失败回缓存
    · 其余（Supabase API 的 POST 等）：完全不拦截
 
    ⚠️ 每次部署改了 css/js，把 VERSION 号 +1，否则手机会一直用旧缓存。
    ========================================================================== */
-var VERSION = "v7";
+var VERSION = "v8";
 var CACHE = "shendu-" + VERSION;
 
 var SHELL = [
@@ -74,19 +74,14 @@ self.addEventListener("fetch", function (e) {
     return;
   }
 
-  /* 同源：stale-while-revalidate */
+  /* 同源：联网时优先读最新内容，离线时用缓存 */
   e.respondWith(
-    caches.match(req).then(function (cached) {
-      var network = fetch(req).then(function (res) {
+    fetch(req).then(function (res) {
         if (res && res.status === 200 && res.type === "basic") {
           var copy = res.clone();
           caches.open(CACHE).then(function (c) { c.put(req, copy); });
         }
         return res;
-      }).catch(function () {
-        return cached || caches.match("./index.html");
-      });
-      return cached || network;
-    })
+      }).catch(function () { return caches.match(req).then(function (cached) { return cached || caches.match("./index.html"); }); })
   );
 });

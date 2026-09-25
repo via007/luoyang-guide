@@ -8,7 +8,23 @@
   var D = window.TRIP_DATA;
   var $ = function (id) { return document.getElementById(id); };
 
-  function setHtml(id, html) { var n = $(id); if (n) n.innerHTML = html; }
+  function setHtml(id, html) {
+    var n = $(id); if (!n) return;
+    n.innerHTML = html;
+    /* 页面只保留时间、路线和预约信息；旧资料中的金额不展示。 */
+    var walker = document.createTreeWalker(n, NodeFilter.SHOW_TEXT), node;
+    while ((node = walker.nextNode())) {
+      node.nodeValue = node.nodeValue
+        .replace(/[约≈]?[¥￥]\s*\d+(?:[.～~\-]\d+)?(?:\s*[×x]\s*\d+)?/g, "")
+        .replace(/(?:人均|每人|起步价|门市价|票价)\s*\d+(?:[.～~\-]\d+)?(?:\s*元)?/g, "")
+        .replace(/\d+(?:[.～~\-]\d+)?\s*元(?:\s*[/／]\s*人)?(?:起)?/g, "")
+        .replace(/\b\d+\s*[×x]\s*\d+\b(?=\s*[·，。；]|\s*$)/g, "")
+        .replace(/免费/g, "")
+        .replace(/（\s*[·、，；]\s*/g, "（")
+        .replace(/（\s*）/g, "")
+        .replace(/\s+[·、，；]\s*(?=[·、，；])/g, " ");
+    }
+  }
 
   function escHtml(s) {
     return String(s == null ? "" : s)
@@ -27,7 +43,7 @@
 
   /* 高德 URI：统一由关键词拼，避免每处重复写编码 */
   function amapUri(kw) {
-    return "https://uri.amap.com/search?keyword=" + encodeURIComponent(kw) + "&city=" + encodeURIComponent("洛阳") + "&callnative=1";
+    return "https://uri.amap.com/search?keyword=" + encodeURIComponent(kw) + "&city=" + encodeURIComponent(/开封|清明上河园|万岁山|大相国寺|包公祠/.test(kw) ? "开封" : "洛阳") + "&callnative=1";
   }
 
   function btnHtml(b) {
@@ -38,7 +54,7 @@
   }
 
   function tagsHtml(tags) {
-    return (tags || []).map(function (t) {
+    return (tags || []).filter(function (t) { return !/[¥￥元]|人均|免费|票价|价位/.test(t.t); }).map(function (t) {
       return '<span class="tag ' + (t.cls || "") + '">' + t.t + "</span>";
     }).join("");
   }
@@ -57,16 +73,11 @@
       '<div class="hm"><div class="l">天气</div><div class="v">' + m.weather + '</div><div class="s">' + m.weatherSub + "</div></div>");
   }
 
-  /* 行程卡：抵达和返程用同一套版式 */
-  function trainBlock(list) {
-    return (list || []).map(function (t) {
-      return '<div class="train">' +
-        '<div class="who' + (t.him ? " him" : "") + '">' + t.who + "</div>" +
-        '<div style="flex:1">' +
-          '<div class="tno">' + t.no + ' <span class="tag ' + (t.him ? "blue" : "gold") + '">' + t.from + " → " + t.to + "</span></div>" +
-          '<div class="muted">' + t.dep + ' 发 → <span class="arr">' + t.arr + " 抵达</span> · " + t.dur + " · 二等座 " + t.price + "</div>" +
-        "</div></div>";
-    }).join("");
+  function ticketHtml(t) {
+    return '<article class="ticket-card"><div class="ticket-top"><span class="ticket-who">' + escHtml(t.who) +
+      '</span><strong>' + escHtml(t.no) + '</strong></div><div class="ticket-line"><div><b>' + escHtml(t.dep) +
+      '</b><small>' + escHtml(t.from) + '</small></div><span class="ticket-arrow">→</span><div><b>' + escHtml(t.arr) +
+      '</b><small>' + escHtml(t.to) + '</small></div></div><p>' + escHtml(t.note) + '</p></article>';
   }
 
   /* 景区/美食横跨洛阳、开封两座城市，按城市插一条小标题 */
@@ -83,11 +94,21 @@
   }
 
   function renderHome() {
-    setHtml("trains", trainBlock(D.trains));
-    setHtml("arrivalNotice", '<div class="notice">' + D.arrivalNotice + "</div>");
+    var now = Date.now();
+    var next = D.tickets.find(function (t) { return new Date('2026-10-' + t.day.split('/')[1].padStart(2, '0') + 'T' + t.dep + ':00+08:00').getTime() > now; }) || D.tickets[D.tickets.length - 1];
+    setHtml("nextMove", '<div class="focus-kicker">下一段车程 <span>' + next.day + '</span></div><div class="focus-main"><strong>' + next.dep +
+      '</strong><div><b>' + escHtml(next.no) + ' · ' + escHtml(next.who) + '</b><span>' + escHtml(next.from) + ' → ' + escHtml(next.to) +
+      '</span></div></div><div class="focus-foot">' + escHtml(next.note) + '</div>');
 
-    setHtml("returnTrains", trainBlock(D.returnTrains));
-    setHtml("returnNotice", D.returnNote ? '<div class="notice danger">' + D.returnNote + "</div>" : "");
+    var groups = [
+      { day: '10/1', title: '抵达洛阳', summary: 'L 17:36 到 · H 21:35 到' },
+      { day: '10/4', title: '转场开封', summary: '11:16 发 · 12:19 到' },
+      { day: '10/6', title: '分别返程', summary: 'L 14:31 左右出发 · H 19:07 出发' }
+    ];
+    setHtml("journeySummary", groups.map(function (g, i) {
+      return '<div class="journey-row"><span class="journey-index">0' + (i + 1) + '</span><span class="journey-date">' + g.day +
+        '</span><div><b>' + g.title + '</b><small>' + g.summary + '</small></div></div>';
+    }).join(""));
 
     setHtml("weather", D.weather.map(function (w) {
       return '<div class="wcell"><div class="d">' + w.d + '</div><div class="ic">' + w.icon + "</div><div>" + w.desc + '</div><div class="t">' + w.t + "</div></div>";
@@ -96,13 +117,12 @@
     setHtml("weatherBtns", D.weatherBtns.map(btnHtml).join(""));
 
     setHtml("overview", D.overviewRows.map(function (r) {
-      return "<tr><td><b>" + r.d + "</b> " + r.dow + "</td><td>" + r.plan + "</td></tr>";
+      return '<div class="overview-row"><span>' + r.d + '</span><small>周' + r.dow + '</small><b>' + r.plan + '</b></div>';
     }).join(""));
 
     setHtml("bookingTimeline", D.bookingTimeline.map(function (b, i) {
-      var circled = "①②③④⑤⑥⑦⑧⑨"[i] || "·";
-      return circled + " <b>" + b.when + "</b> — " + b.text;
-    }).join("<br>"));
+      return '<div class="booking-row"><span>' + b.when + '</span><div>' + b.text + '</div></div>';
+    }).join(""));
   }
 
   /* 住宿：与景区卡同一套折叠卡样式（details/summary 的样式是通用的） */
@@ -112,7 +132,7 @@
         '<summary><span class="ttl"><span class="no">' + s.no + "</span>" + s.name + tagsHtml(s.tags) +
         '</span><span class="arrow">▶</span></summary>' +
         '<div class="detail-body">' +
-          s.kvs.map(function (kv) {
+          s.kvs.filter(function (kv) { return !/^(门票|票价|价格|费用|优惠)$/.test(kv.k); }).map(function (kv) {
             return '<div class="kv"><div class="k">' + kv.k + '</div><div class="v">' + kv.v + "</div></div>";
           }).join("") +
           (s.btns ? '<div class="btnrow">' + s.btns.map(btnHtml).join("") + "</div>" : "") +
@@ -125,7 +145,7 @@
      ====================================================================== */
   function slotHtml(s) {
     return '<div class="tl"><div class="time">' + s.time + '</div><div class="what">' + s.what + "</div>" +
-      (s.note ? '<div class="note">' + s.note + "</div>" : "") + "</div>";
+      (s.note ? '<details class="slot-note"><summary>查看提示</summary><div class="note">' + s.note + "</div></details>" : "") + "</div>";
   }
 
   /* 一段交通：从哪到哪、多远、怎么走、要不要一键导航 */
@@ -140,8 +160,10 @@
   /* 行程卡 = 今天去哪（时间轴）+ 今晚住哪 + 今天怎么走 + 预计花费
      路线页只剩两张地图，交通段落跟着当天走，用的时候不用来回切 tab */
   function renderPlan() {
+    var dayOfMonth = new Date().getMonth() === 9 ? new Date().getDate() : 1;
+    var selected = Math.max(0, Math.min(5, dayOfMonth - 1));
     setHtml("dayPills", D.days.map(function (d, i) {
-      return '<button class="daypill' + (i === 0 ? " on" : "") + '" data-d="' + d.id + '" type="button">' + d.pill + "</button>";
+      return '<button class="daypill' + (i === selected ? " on" : "") + '" data-d="' + d.id + '" type="button">' + d.pill + "</button>";
     }).join(""));
 
     var stayByNo = {};
@@ -159,28 +181,25 @@
       }
 
       if (d.legs && d.legs.length) {
-        out += '<div class="dsec"><div class="dsec-h">今天怎么走</div>' + d.legs.map(legHtml).join("") + "</div>";
+        out += '<details class="day-extra"><summary>今天怎么走 <span class="arrow">＋</span></summary><div class="detail-body">' + d.legs.map(legHtml).join("") + "</div></details>";
       }
 
-      if (d.cost) {
-        out += '<div class="dcost"><span>预计花费</span>' + d.cost + "</div>";
-      }
-
-      return '<div class="daycard" id="' + d.id + '">' +
+      return '<div class="daycard' + (D.days.indexOf(d) === selected ? ' active' : '') + '" id="' + d.id + '">' +
         '<div class="dayhead"><span class="dnum">' + d.numCn + '</span><span class="dttl">' + d.date + " · " + d.dow +
         '</span><span class="dsub">' + d.sub + "</span></div>" +
         '<div class="card">' + out + "</div></div>";
     }).join(""));
 
-    /* 点 pill 滚到对应天，并高亮 */
+    /* 一次只显示一天，减少长页面滚动 */
     var pills = $("dayPills");
     pills.addEventListener("click", function (e) {
       var btn = e.target.closest(".daypill");
       if (!btn) return;
       pills.querySelectorAll(".daypill").forEach(function (x) { x.classList.remove("on"); });
       btn.classList.add("on");
+      $("dayList").querySelectorAll(".daycard").forEach(function (x) { x.classList.remove("active"); });
       var el = $(btn.getAttribute("data-d"));
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el) { el.classList.add("active"); window.scrollTo({ top: 0, behavior: "smooth" }); }
     });
   }
 
@@ -200,7 +219,7 @@
         '<summary><span class="ttl"><span class="no">' + s.no + "</span>" + s.name + tagsHtml(s.tags) +
         '</span><span class="arrow">▶</span></summary>' +
         '<div class="detail-body">' +
-          s.kvs.map(function (kv) {
+          s.kvs.filter(function (kv) { return !/^(门票|票价|价格|费用|优惠)$/.test(kv.k); }).map(function (kv) {
             return '<div class="kv"><div class="k">' + kv.k + '</div><div class="v">' + kv.v + "</div></div>";
           }).join("") +
           (s.btns ? '<div class="btnrow">' + s.btns.map(btnHtml).join("") + "</div>" : "") +
@@ -226,10 +245,11 @@
   }
 
   function renderTrans() {
-    setHtml("trainRows", "<tr><th>人</th><th>车次</th><th>区间</th><th>时间</th><th>票价</th></tr>" +
-      D.trans.trainRows.map(function (r) {
-        return "<tr><td>" + r.who + "</td><td>" + r.no + "</td><td>" + r.route + "</td><td>" + r.time + "</td><td>" + r.price + "</td></tr>";
-      }).join(""));
+    var day = "";
+    setHtml("trainRows", D.tickets.map(function (t) {
+      var heading = t.day !== day ? '<div class="ticket-date">' + (day = t.day) + '<span>' + ({ '10/1': '抵达', '10/4': '转场', '10/6': '返程' }[t.day]) + '</span></div>' : '';
+      return heading + ticketHtml(t);
+    }).join(""));
     setHtml("trainNote", D.trans.trainNote);
 
     setHtml("intraCity", D.trans.intraCity.map(function (kv) {

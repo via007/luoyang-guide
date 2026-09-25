@@ -1,164 +1,83 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>洛阳 · 开封 | 双城行 · 国庆双人游</title>
-<meta name="description" content="国庆洛阳 + 开封六天双人游攻略：行程、路线地图、景区、美食、交通、备忘清单。">
-
-<!-- PWA -->
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#6e211c" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1a0a09" media="(prefers-color-scheme: dark)">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="神都行">
-
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f0e7">
+  <meta name="description" content="2026 国庆洛阳·开封双人行：每天怎么走、六段车次、住宿与预约。">
+  <title>洛阳 · 开封｜国庆行程</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-<header class="hero">
-  <div class="hero-inner">
-    <div class="hero-top">
-      <div>
-        <h1 id="heroTitle"></h1>
-        <div class="sub" id="heroSub"></div>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-top">
+        <div>
+          <div class="hero-kicker">二〇二六 · 国庆双城行</div>
+          <h1 id="heroTitle"></h1>
+          <div class="sub" id="heroSub"></div>
+        </div>
+        <button class="themebtn" id="themeBtn" type="button" title="切换深浅色" aria-label="切换深浅色">◐</button>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-        <div class="seal" id="heroSeal"></div>
-        <button class="themebtn" id="themeBtn" type="button" title="切换深浅色" aria-label="切换深浅色">🌙</button>
-      </div>
+      <div class="hero-meta" id="heroMeta"></div>
+      <div class="hero-foot"><div class="countdown" id="cd"></div><div class="syncbar" id="syncBar"><span class="dot"></span><span id="syncText">本机保存</span></div></div>
     </div>
-    <div class="hero-meta" id="heroMeta"></div>
-    <div class="countdown" id="cd"></div>
-    <div class="syncbar" id="syncBar"><span class="dot"></span><span id="syncText">本机保存</span></div>
-  </div>
-  <svg class="wave" viewBox="0 0 680 34" preserveAspectRatio="none"><path d="M0,34 L0,22 C85,8 170,30 255,20 C340,10 425,28 510,18 C570,11 625,20 680,14 L680,34 Z"/></svg>
-</header>
+  </header>
 
-<main>
+  <main>
+    <section class="tabpage active" id="p-home" aria-label="概览">
+      <div class="section-label"><span>01 / 出行概览</span><span>先看关键时间</span></div>
+      <div class="focus-card" id="nextMove"></div>
+      <div class="sec">三段路程</div>
+      <div class="journey-summary" id="journeySummary"></div>
+      <div class="sec">六天安排</div>
+      <div class="overview-list" id="overview"></div>
+      <p class="home-hint">具体时刻和站名见「车票」，当天细节见「每日」。</p>
+    </section>
 
-  <!-- ================= 总览 ================= -->
-  <section class="tabpage active" id="p-home">
-    <div class="sec">抵达车次（10月1日）</div>
-    <div id="trains"></div>
-    <div id="arrivalNotice"></div>
+    <section class="tabpage" id="p-plan" aria-label="每日行程">
+      <div class="section-label"><span>02 / 每日行程</span><span>一次只看一天</span></div>
+      <div class="daypills" id="dayPills"></div>
+      <div id="dayList"></div>
+    </section>
 
-    <div class="sec">返程车次（10月6日）</div>
-    <div id="returnTrains"></div>
-    <div id="returnNotice"></div>
+    <section class="tabpage" id="p-trans" aria-label="车票">
+      <div class="section-label"><span>03 / 车票时刻</span><span>以订单为准</span></div>
+      <div id="trainRows"></div>
+      <div class="notice danger" id="trainNote"></div>
+      <details class="resource-group"><summary><span>市内交通</span><span class="arrow">＋</span></summary><div class="detail-body" id="intraCity"></div></details>
+      <details class="resource-group"><summary><span>一键导航</span><span class="arrow">＋</span></summary><div class="detail-body" id="navlines"></div></details>
+    </section>
 
-    <div class="sec">住宿</div>
-    <div id="stays"></div>
+    <section class="tabpage" id="p-route" aria-label="地图">
+      <div class="section-label"><span>04 / 路线地图</span><span>按城市查看</span></div>
+      <div class="notice" id="routeTransfer"></div>
+      <p class="map-caveat">住宿点按截图地址标在地图上；部分标记是附近位置。到店时点击标记，用酒店名称与完整地址导航。</p>
+      <div class="card map-card"><div class="maphead"><b>洛阳</b><span>10/1 — 10/3</span></div><div class="amapbox" id="amapBox_ly"></div><p class="amapmsg" id="amapMsg_ly"></p><div class="amapfilter" id="amapFilter_ly"></div><div class="rlegend" id="alegend_ly"></div></div>
+      <div class="card map-card"><div class="maphead"><b>开封</b><span>10/4 — 10/5</span></div><div class="amapbox" id="amapBox_kf"></div><p class="amapmsg" id="amapMsg_kf"></p><div class="amapfilter" id="amapFilter_kf"></div><div class="rlegend" id="alegend_kf"></div></div>
+    </section>
 
-    <div class="sec">国庆天气</div>
-    <div class="card">
-      <div class="weathergrid" id="weather"></div>
-      <div class="btnrow" id="weatherBtns"></div>
-    </div>
+    <section class="tabpage" id="p-more" aria-label="资料">
+      <div class="section-label"><span>05 / 行前资料</span><span>需要时再展开</span></div>
+      <details class="resource-group"><summary><span>住宿 <small>4 处</small></span><span class="arrow">＋</span></summary><div class="resource-content" id="stays"></div></details>
+      <details class="resource-group"><summary><span>预约与待办</span><span class="arrow">＋</span></summary><div class="resource-content"><div id="bookingTimeline" class="booking-list"></div><div id="checkBooking"></div><div class="progress"><i id="pbBooking"></i></div><div class="progress-label" id="plBooking"></div></div></details>
+      <details class="resource-group"><summary><span>景点速查</span><span class="arrow">＋</span></summary><div class="resource-content" id="sights"></div></details>
+      <details class="resource-group"><summary><span>美食与手信</span><span class="arrow">＋</span></summary><div class="resource-content"><p class="muted" id="foodNotice"></p><div id="foods"></div><div class="card" id="souvenir"></div></div></details>
+      <details class="resource-group"><summary><span>天气与行李</span><span class="arrow">＋</span></summary><div class="resource-content"><div class="weathergrid" id="weather"></div><div class="btnrow" id="weatherBtns"></div><div class="sec">携带物品</div><div id="checkPacking"></div><div class="progress"><i id="pbPacking"></i></div><div class="progress-label" id="plPacking"></div><div class="sec">注意事项</div><div id="memoNotes"></div></div></details>
+    </section>
+  </main>
 
-    <div class="sec">六天概览</div>
-    <div class="card" style="padding:8px 0 4px">
-      <table class="ptable bare" style="border:none"><tbody id="overview"></tbody></table>
-    </div>
-
-    <div class="sec">预约时间线</div>
-    <div class="notice danger" id="bookingTimeline" style="font-size:13px;line-height:2"></div>
-  </section>
-
-  <!-- ================= 行程 ================= -->
-  <section class="tabpage" id="p-plan">
-    <div class="daypills" id="dayPills"></div>
-    <div id="dayList"></div>
-  </section>
-
-  <!-- ================= 路线 ================= -->
-  <section class="tabpage" id="p-route">
-    <div class="sec">路线地图 · 真实定位</div>
-    <p id="rhint" style="margin:0 2px 12px">
-      <b>点标记</b>看是第几天、一键跳高德导航 · 每张图上方的按天开关可只看某一天 · 双指缩放 / 拖动查看<br>
-      具体<b>每天怎么走</b>（距离 + 公交地铁）已经放进「行程」页当天的卡片里。
-    </p>
-    <div class="notice" id="routeTransfer" style="font-size:13px"></div>
-
-    <div class="card" style="padding:10px">
-      <div class="maphead"><b>洛阳</b><span>10/1 – 10/3 · 3 天</span></div>
-      <div class="amapbox" id="amapBox_ly"></div>
-      <p class="amapmsg" id="amapMsg_ly"></p>
-      <div class="amapfilter" id="amapFilter_ly"></div>
-      <div class="rlegend" id="alegend_ly"></div>
-    </div>
-
-    <div class="card" style="padding:10px">
-      <div class="maphead"><b>开封</b><span>10/4 – 10/5 · 2 天</span></div>
-      <div class="amapbox" id="amapBox_kf"></div>
-      <p class="amapmsg" id="amapMsg_kf"></p>
-      <div class="amapfilter" id="amapFilter_kf"></div>
-      <div class="rlegend" id="alegend_kf"></div>
-    </div>
-  </section>
-
-  <!-- ================= 景区 ================= -->
-  <section class="tabpage" id="p-sight"><div id="sights"></div></section>
-
-  <!-- ================= 美食 ================= -->
-  <section class="tabpage" id="p-food">
-    <div class="notice" id="foodNotice" style="font-size:13px"></div>
-    <div id="foods"></div>
-    <div class="card" id="souvenir"></div>
-  </section>
-
-  <!-- ================= 交通 ================= -->
-  <section class="tabpage" id="p-trans">
-    <div class="sec">高铁</div>
-    <div class="card" style="padding:8px 0 4px">
-      <table class="ptable bare" style="border:none"><tbody id="trainRows"></tbody></table>
-      <p class="muted" id="trainNote" style="padding:8px 10px 4px"></p>
-    </div>
-
-    <div class="sec">市内交通</div>
-    <div class="card" id="intraCity"></div>
-
-    <div class="sec">一键导航（点击跳高德）</div>
-    <div class="card" style="padding:8px 14px" id="navlines"></div>
-  </section>
-
-  <!-- ================= 备忘 ================= -->
-  <section class="tabpage" id="p-memo">
-    <div class="sec">预约与购票清单</div>
-    <div class="card">
-      <div id="checkBooking"></div>
-      <div class="progress"><i id="pbBooking"></i></div>
-      <div class="progress-label" id="plBooking"></div>
-    </div>
-
-    <div class="sec">携带物品</div>
-    <div class="card">
-      <div id="checkPacking"></div>
-      <div class="progress"><i id="pbPacking"></i></div>
-      <div class="progress-label" id="plPacking"></div>
-    </div>
-
-    <div class="sec">注意事项</div>
-    <div class="card" id="memoNotes"></div>
-  </section>
-
-</main>
-
-<nav id="nav">
-  <button class="on" data-p="p-home" type="button"><span class="ic">🏠</span>总览</button>
-  <button data-p="p-plan" type="button"><span class="ic">🗓️</span>行程</button>
-  <button data-p="p-route" type="button"><span class="ic">🗺️</span>路线</button>
-  <button data-p="p-sight" type="button"><span class="ic">⛩️</span>景区</button>
-  <button data-p="p-food" type="button"><span class="ic">🍜</span>美食</button>
-  <button data-p="p-trans" type="button"><span class="ic">🚄</span>交通</button>
-  <button data-p="p-memo" type="button"><span class="ic">✅</span>备忘</button>
-</nav>
-
-<script src="js/data.js"></script>
-<script src="js/sync.js"></script>
-<script src="js/app.js"></script>
+  <nav id="nav" aria-label="主导航">
+    <button class="on" data-p="p-home" type="button"><span class="ic">◉</span>概览</button>
+    <button data-p="p-plan" type="button"><span class="ic">▤</span>每日</button>
+    <button data-p="p-trans" type="button"><span class="ic">⇢</span>车票</button>
+    <button data-p="p-route" type="button"><span class="ic">◇</span>地图</button>
+    <button data-p="p-more" type="button"><span class="ic">≡</span>资料</button>
+  </nav>
+  <script src="js/data.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
