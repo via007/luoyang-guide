@@ -406,6 +406,7 @@
             infoWin.setContent(infoHtml(n));
             infoWin.open(map, [n.lng, n.lat]);
           });
+          mk.__id = n.id;
           mk.__day = n.day;
           markers.push(mk);
         });
@@ -434,9 +435,19 @@
       function syncLabelMode() {
         if (map && box) box.classList.toggle("zoomed-out", map.getZoom() < (city.labelZoom || 12));
       }
-      function applyFilter() {
-        markers.forEach(function (mk) { on[mk.__day] ? mk.show() : mk.hide(); });
+      function applyFilter(fitVisible) {
+        var routeEnds = {};
+        edges.forEach(function (e) {
+          if (on[edgeDay(e)]) { routeEnds[e[0]] = true; routeEnds[e[1]] = true; }
+        });
+        function isVisible(mk) { return !!(on[mk.__day] || routeEnds[mk.__id]); }
+        markers.forEach(function (mk) { isVisible(mk) ? mk.show() : mk.hide(); });
         lines.forEach(function (pl) { on[pl.__day] ? pl.show() : pl.hide(); });
+        /* 白马寺在城东；按天查看时把镜头收回到当天的路线。 */
+        if (fitVisible && map) {
+          var visible = markers.filter(isVisible);
+          if (visible.length) map.setFitView(visible, false, [70, 70, 70, 70]);
+        }
       }
 
       function buildFilter() {
@@ -458,7 +469,7 @@
             if (bd === "all") return;
             b.classList.toggle("on", !!on[bd]);
           });
-          applyFilter();
+          applyFilter(true);
         });
       }
 
